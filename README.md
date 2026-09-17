@@ -28,15 +28,6 @@ One detection event → written once → used for trajectory, analytics, and ale
 - Vehicle trajectory reconstruction
 - GIS-based trajectory visualization
 
-### Traffic Analytics
-
-- Per-camera traffic density
-- City-wide heatmaps
-- Origin-Destination (OD) movement patterns
-- Congestion analysis
-- Traffic flow and direction analysis
-- Average speed estimation
-
 ### Security & Alerts
 
 - Blacklisted vehicle detection
@@ -48,8 +39,6 @@ One detection event → written once → used for trajectory, analytics, and ale
 
 - Plate search
 - Vehicle trajectory map
-- Traffic heatmap
-- Traffic analytics
 - Live security alerts
 
 ---
@@ -103,7 +92,6 @@ The platform is divided into the following layers:
 
 For the hackathon, prerecorded traffic videos are used as virtual camera feeds. Each video is mapped to a virtual camera using a camera configuration file.
 
-The architecture can later accept real RTSP camera streams without changing the core backend design.
 
 ---
 
