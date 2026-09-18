@@ -1,0 +1,83 @@
+[
+  {
+    "camera_id": "CAM_01",
+    "name": "BS-11",
+    "video_path": "data/videos/trajectory/cam_1.mp4",
+    "latitude": null,
+    "longitude": null,
+    "road": "",
+    "direction": ""
+  },
+  {
+    "camera_id": "CAM_02",
+    "name": "Innovation Studio",
+    "video_path": "data/videos/trajectory/cam_2.mp4",
+    "latitude": null,
+    "longitude": null,
+    "road": "",
+    "direction": ""
+  },
+  {
+    "camera_id": "CAM_03",
+    "name": "Sports Complex",
+    "video_path": "data/videos/trajectory/cam_3.mp4",
+    "latitude": null,
+    "longitude": null,
+    "road": "",
+    "direction": ""
+  },
+  {
+    "camera_id": "CAM_04",
+    "name": "BH-1 Food Court",
+    "video_path": "data/videos/trajectory/cam_4.mp4",
+    "latitude": null,
+    "longitude": null,
+    "road": "",
+    "direction": ""
+  },
+  {
+    "camera_id": "CAM_05",
+    "name": "Central Mess",
+    "video_path": "data/videos/trajectory/cam_5.mp4",
+    "latitude": null,
+    "longitude": null,
+    "road": "",
+    "direction": ""
+  },
+  {
+    "camera_id": "CAM_06",
+    "name": "25-Block",
+    "video_path": "data/videos/trajectory/cam_6.mp4",
+    "latitude": null,
+    "longitude": null,
+    "road": "",
+    "direction": ""
+  },
+  {
+    "camera_id": "CAM_07",
+    "name": "Physical Education Block",
+    "video_path": "data/videos/trajectory/cam_7.mp4",
+    "latitude": null,
+    "longitude": null,
+    "road": "",
+    "direction": ""
+  },
+  {
+    "camera_id": "CAM_08",
+    "name": "Uni-Mall",
+    "video_path": "data/videos/trajectory/cam_8.mp4",
+    "latitude": null,
+    "longitude": null,
+    "road": "",
+    "direction": ""
+  },
+  {
+    "camera_id": "CAM_09",
+    "name": "MB Food Square",
+    "video_path": "data/videos/trajectory/cam_9.mp4",
+    "latitude": null,
+    "longitude": null,
+    "road": "",
+    "direction": ""
+  }
+]
