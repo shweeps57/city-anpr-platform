@@ -216,3 +216,28 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ============================================================
+# ANPR Platform — project-specific exclusions
+# ============================================================
+
+# YOLO / plate detector model weights (large binaries, never commit)
+models/*.pt
+models/*.onnx
+models/*.pth
+models/*.weights
+
+# Traffic video files (large binaries, never commit)
+data/videos/*.mp4
+data/videos/*.avi
+data/videos/*.mkv
+data/videos/*.mov
+
+# Runtime-generated plate-crop snapshots
+data/snapshots/
+
+# PaddleOCR auto-downloaded model cache
+.paddleocr/
+
+# Ultralytics auto-download cache
+runs/

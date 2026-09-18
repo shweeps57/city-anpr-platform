@@ -30,6 +30,26 @@ services:
       - postgres
       - redis
 
+  perception:
+    build:
+      context: ./perception
+    container_name: anpr-perception
+    volumes:
+      - ./models:/app/models:ro
+      - ./data/videos:/app/data/videos:ro
+      - ./data/snapshots:/app/data/snapshots
+      - ./config:/app/config:ro
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_STREAM: plate-events
+      VEHICLE_MODEL: /app/models/yolov8n.pt
+      PLATE_MODEL: /app/models/plate_detector.pt
+      CAMERA_CONFIG: /app/config/cameras.json
+    depends_on:
+      - redis
+    restart: on-failure
+
 volumes:
   postgres_data:
   redis_data:
