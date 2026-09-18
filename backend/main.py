@@ -15,6 +15,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import psycopg
 import redis
+from models.schemas import CameraBase, CameraResponse
 
 from database.connection import get_db_connection, close_connections
 from routes.trajectory import router as trajectory_router
@@ -99,25 +100,38 @@ def list_cameras():
             return cur.fetchall()
 
 
-@app.post("/api/cameras", status_code=201, tags=["Cameras"])
-def create_camera(camera: dict):
-    """Register a new camera."""
+@app.post(
+    "/api/cameras",
+    response_model=CameraResponse,
+    status_code=201,
+    tags=["Cameras"],
+)
+def create_camera(camera: CameraBase):
+    """Create or update a camera."""
     with get_db_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute("""
-                INSERT INTO cameras (camera_id, name, latitude, longitude, road, direction)
-                VALUES (%(camera_id)s, %(name)s, %(latitude)s, %(longitude)s,
-                        %(road)s, %(direction)s)
+            cur.execute(
+                """
+                INSERT INTO cameras (
+                    camera_id, name, latitude, longitude, road, direction
+                )
+                VALUES (
+                    %(camera_id)s, %(name)s, %(latitude)s, %(longitude)s,
+                    %(road)s, %(direction)s
+                )
                 ON CONFLICT (camera_id) DO UPDATE SET
                     name = EXCLUDED.name,
                     latitude = EXCLUDED.latitude,
                     longitude = EXCLUDED.longitude,
                     road = EXCLUDED.road,
                     direction = EXCLUDED.direction
-                RETURNING *
-            """, camera)
+                RETURNING camera_id, name, latitude, longitude, road, direction
+                """,
+                camera.model_dump()
+            )
             row = cur.fetchone()
             conn.commit()
+
     return row
 
 
