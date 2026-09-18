@@ -1,13 +1,9 @@
-import json
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
 from services.alerts import get_recent_alerts, create_alert
 from models.schemas import AlertCreate
+from services.realtime import alert_hub
 
 router = APIRouter(tags=["Alerts"])
-
-# Track active WebSocket connections for broadcasting
-active_connections: list[WebSocket] = []
-
 
 @router.get("/api/alerts")
 def list_alerts(
@@ -29,16 +25,7 @@ async def post_alert(alert: AlertCreate):
         camera_id=alert.camera_id,
     )
 
-    # Broadcast to all WebSocket clients
-    disconnected = []
-    for ws in active_connections:
-        try:
-            await ws.send_text(json.dumps(result))
-        except Exception:
-            disconnected.append(ws)
-
-    for ws in disconnected:
-        active_connections.remove(ws)
+    await alert_hub.broadcast(result)
 
     return result
 
@@ -50,13 +37,12 @@ async def websocket_alerts(websocket: WebSocket):
 
     Clients connect here to receive live alerts as they are created.
     """
-    await websocket.accept()
-    active_connections.append(websocket)
+    await alert_hub.connect(websocket)
     try:
         while True:
             # Keep connection alive; client can send pings
             data = await websocket.receive_text()
             # Echo back as a simple keepalive acknowledgment
-            await websocket.send_text(json.dumps({"type": "pong", "data": data}))
+            await websocket.send_json({"type": "pong", "data": data})
     except WebSocketDisconnect:
-        active_connections.remove(websocket)
+        alert_hub.disconnect(websocket)

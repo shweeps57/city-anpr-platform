@@ -10,7 +10,8 @@ Central application server that exposes REST APIs for:
 All endpoints consume canonical plate_event data from PostgreSQL/PostGIS.
 """
 
-from contextlib import asynccontextmanager
+import asyncio
+from contextlib import asynccontextmanager, suppress
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import psycopg
@@ -22,6 +23,7 @@ from routes.trajectory import router as trajectory_router
 from routes.analytics import router as analytics_router
 from routes.blacklist import router as blacklist_router
 from routes.alerts import router as alerts_router
+from services.event_consumer import PlateEventConsumer
 
 
 # ─── Application lifecycle ───
@@ -29,8 +31,16 @@ from routes.alerts import router as alerts_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup / shutdown hooks."""
-    yield
-    await close_connections()
+    consumer = PlateEventConsumer()
+    consumer_task = asyncio.create_task(consumer.run())
+    try:
+        yield
+    finally:
+        await consumer.stop()
+        consumer_task.cancel()
+        with suppress(asyncio.CancelledError):
+            await consumer_task
+        await close_connections()
 
 
 app = FastAPI(
