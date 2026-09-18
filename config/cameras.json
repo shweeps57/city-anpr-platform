@@ -1,47 +1,83 @@
 [
   {
     "camera_id": "CAM_01",
-    "name": "Junction A — GT Road North",
-    "video_path": "/app/data/videos/cam_01.mp4",
-    "latitude": 31.2560,
-    "longitude": 75.7030,
-    "road": "GT Road",
-    "direction": "north"
+    "name": "BS-11",
+    "video_path": "data/videos/trajectory/cam_1.mp4",
+    "latitude": null,
+    "longitude": null,
+    "road": "",
+    "direction": ""
   },
   {
     "camera_id": "CAM_02",
-    "name": "Junction B — Model Town",
-    "video_path": "/app/data/videos/cam_02.mp4",
-    "latitude": 31.2605,
-    "longitude": 75.7012,
-    "road": "Model Town Link Road",
-    "direction": "east"
+    "name": "Innovation Studio",
+    "video_path": "data/videos/trajectory/cam_2.mp4",
+    "latitude": null,
+    "longitude": null,
+    "road": "",
+    "direction": ""
   },
   {
     "camera_id": "CAM_03",
-    "name": "Junction C — Bus Stand Chowk",
-    "video_path": "/app/data/videos/cam_03.mp4",
-    "latitude": 31.2540,
-    "longitude": 75.7060,
-    "road": "Bus Stand Road",
-    "direction": "south"
+    "name": "Sports Complex",
+    "video_path": "data/videos/trajectory/cam_3.mp4",
+    "latitude": null,
+    "longitude": null,
+    "road": "",
+    "direction": ""
   },
   {
     "camera_id": "CAM_04",
-    "name": "Junction D — Civil Lines",
-    "video_path": "/app/data/videos/cam_04.mp4",
-    "latitude": 31.2580,
-    "longitude": 75.6990,
-    "road": "Civil Lines",
-    "direction": "west"
+    "name": "BH-1 Food Court",
+    "video_path": "data/videos/trajectory/cam_4.mp4",
+    "latitude": null,
+    "longitude": null,
+    "road": "",
+    "direction": ""
   },
   {
     "camera_id": "CAM_05",
-    "name": "Junction E — Railway Road",
-    "video_path": "/app/data/videos/cam_05.mp4",
-    "latitude": 31.2520,
-    "longitude": 75.7050,
-    "road": "Railway Road",
-    "direction": "north"
+    "name": "Central Mess",
+    "video_path": "data/videos/trajectory/cam_5.mp4",
+    "latitude": null,
+    "longitude": null,
+    "road": "",
+    "direction": ""
+  },
+  {
+    "camera_id": "CAM_06",
+    "name": "25-Block",
+    "video_path": "data/videos/trajectory/cam_6.mp4",
+    "latitude": null,
+    "longitude": null,
+    "road": "",
+    "direction": ""
+  },
+  {
+    "camera_id": "CAM_07",
+    "name": "Physical Education Block",
+    "video_path": "data/videos/trajectory/cam_7.mp4",
+    "latitude": null,
+    "longitude": null,
+    "road": "",
+    "direction": ""
+  },
+  {
+    "camera_id": "CAM_08",
+    "name": "Uni-Mall",
+    "video_path": "data/videos/trajectory/cam_8.mp4",
+    "latitude": null,
+    "longitude": null,
+    "road": "",
+    "direction": ""
+  },
+  {
+    "camera_id": "CAM_09",
+    "name": "MB Food Square",
+    "video_path": "data/videos/trajectory/cam_9.mp4",
+    "latitude": null,
+    "longitude": null,
+    "road": "",
+    "direction": ""
   }
 ]
