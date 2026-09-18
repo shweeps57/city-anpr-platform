@@ -192,7 +192,7 @@ Docker Compose runs the required services in containers.
 
 # 1. Clone the Repository
 
-    git clone https://github.com/YOUR_USERNAME/city-anpr-platform.git
+    git clone https://github.com/shweeps57/city-anpr-platform.git
     cd city-anpr-platform
 
 Replace YOUR_USERNAME with the GitHub account that owns the repository.
