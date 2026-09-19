@@ -36,18 +36,24 @@ def build_event(
     direction: Optional[str] = None,
     track_id: Optional[str] = None,
     snapshot: Optional[np.ndarray] = None,
+    sequence_index: Optional[int] = None,
+    entry_frame: Optional[int] = None,
+    exit_frame: Optional[int] = None,
 ) -> dict:
     """
     Construct a canonical plate event dict.
 
     Args:
-        plate_number:  Confirmed plate string e.g. "PB65AB1234"
-        confidence:    Float 0–1 from OCR / plate detector
-        camera_id:     String e.g. "CAM_01"
-        vehicle_type:  "car" | "motorcycle" | "bus" | "truck"
-        direction:     Camera direction string (from cameras.json)
-        track_id:      ByteTrack track ID as string
-        snapshot:      BGR numpy array of the plate crop (saved as JPEG)
+        plate_number:    Confirmed plate string e.g. "PB65AB1234"
+        confidence:      Float 0–1 from OCR / plate detector
+        camera_id:       String e.g. "CAM_01"
+        vehicle_type:    "car" | "motorcycle" | "bus" | "truck"
+        direction:       Camera direction string (from cameras.json)
+        track_id:        ByteTrack track ID as string
+        snapshot:        BGR numpy array of the plate crop (saved as JPEG)
+        sequence_index:  Camera position in sequential processing order
+        entry_frame:     Frame number when vehicle first appeared in this camera
+        exit_frame:      Frame number when vehicle was last seen in this camera
 
     Returns:
         Dict matching the plate_events schema.
@@ -70,6 +76,9 @@ def build_event(
         "track_id": track_id,
         "location": None,          # Resolved later by backend from camera GIS data
         "snapshot_path": snapshot_path,
+        "sequence_index": sequence_index,
+        "entry_frame": entry_frame,
+        "exit_frame": exit_frame,
     }
 
     return event

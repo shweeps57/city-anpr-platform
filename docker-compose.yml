@@ -49,6 +49,7 @@ services:
       VEHICLE_MODEL: /app/models/yolov8n.pt
       PLATE_MODEL: /app/models/plate_detector.pt
       CAMERA_CONFIG: /app/config/cameras.json
+      PROCESSING_MODE: sequential
     depends_on:
       - redis
     restart: on-failure
