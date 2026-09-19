@@ -4,25 +4,26 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>City ANPR Command Console — Sanchaar</title>
+  <title>City ANPR Command Console</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-  
-  <!-- Leaflet GIS Map CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+    rel="stylesheet">
   <style>
     :root {
+      /* Surfaces */
       --bg: #eef2f7;
       --card: #ffffff;
       --line: #e6ebf2;
       --line-strong: #d3dbe6;
 
+      /* Text */
       --ink: #0f172a;
       --ink-dim: #5b6778;
       --ink-faint: #94a0b2;
 
+      /* Accent */
       --blue: #2563eb;
       --blue-dark: #1d4ed8;
       --blue-soft: #e8effd;
@@ -33,6 +34,7 @@
       --amber: #c77700;
       --amber-soft: #fdf1dc;
 
+      /* Sidebar */
       --side: #1a1f2b;
       --side-hover: #242a38;
       --side-active: rgba(255, 255, 255, 0.09);
@@ -44,7 +46,12 @@
       --mono: "Space Mono", ui-monospace, monospace;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
       background: var(--bg);
       color: var(--ink);
@@ -54,7 +61,12 @@
       min-height: 100vh;
       font-variant-numeric: tabular-nums;
     }
-    button { font-family: inherit; color: inherit; cursor: pointer; }
+
+    button {
+      font-family: inherit;
+      color: inherit;
+      cursor: pointer;
+    }
 
     svg.i {
       width: 18px;
@@ -67,20 +79,25 @@
       flex: none;
     }
 
+    /* ---------- Layout shell ---------- */
     .shell {
       display: grid;
       grid-template-columns: 232px 1fr;
       min-height: 100vh;
       transition: grid-template-columns 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .shell.collapsed { grid-template-columns: 0px 1fr; }
+
+    .shell.collapsed {
+      grid-template-columns: 0px 1fr;
+    }
+
     .shell.collapsed .rail {
       transform: translateX(-100%);
       opacity: 0;
       pointer-events: none;
     }
 
-    /* Sidebar */
+    /* ---------- Sidebar ---------- */
     .rail {
       background: var(--side);
       color: #fff;
@@ -90,10 +107,14 @@
       position: sticky;
       top: 0;
       transition: transform 0.2s ease, opacity 0.2s ease;
-      z-index: 1000;
+      z-index: 30;
       overflow: hidden;
     }
-    .brand { padding: 22px 20px 18px; }
+
+    .brand {
+      padding: 22px 20px 18px;
+    }
+
     .brand .logo {
       display: flex;
       align-items: center;
@@ -102,11 +123,29 @@
       font-weight: 700;
       letter-spacing: -0.01em;
     }
-    .brand .logo svg { width: 26px; height: 26px; }
-    .brand .logo span { color: #4f8bff; }
-    .brand p { font-size: 11.5px; color: var(--side-ink); margin-top: 6px; }
 
-    .nav { padding: 8px 12px; display: flex; flex-direction: column; gap: 4px; }
+    .brand .logo svg {
+      width: 26px;
+      height: 26px;
+    }
+
+    .brand .logo span {
+      color: #4f8bff;
+    }
+
+    .brand p {
+      font-size: 11.5px;
+      color: var(--side-ink);
+      margin-top: 6px;
+    }
+
+    .nav {
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
     .nav button {
       background: none;
       border: 0;
@@ -121,8 +160,17 @@
       gap: 12px;
       transition: background 0.15s, color 0.15s;
     }
-    .nav button:hover { background: var(--side-hover); color: #fff; }
-    .nav button.active { background: var(--side-active); color: #fff; }
+
+    .nav button:hover {
+      background: var(--side-hover);
+      color: #fff;
+    }
+
+    .nav button.active {
+      background: var(--side-active);
+      color: #fff;
+    }
+
     .nav .badge {
       margin-left: auto;
       background: var(--red);
@@ -143,9 +191,13 @@
       flex-direction: column;
       gap: 4px;
     }
-    .railfoot b { color: #d5dbe6; font-weight: 600; }
 
-    /* Main Area */
+    .railfoot b {
+      color: #d5dbe6;
+      font-weight: 600;
+    }
+
+    /* ---------- Main ---------- */
     .main {
       min-width: 0;
       padding: 20px 24px 32px;
@@ -154,7 +206,13 @@
       gap: 18px;
     }
 
-    .topbar { display: flex; align-items: center; gap: 14px; }
+    /* Top bar */
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
     .icon-btn {
       background: #fff;
       border: 1px solid var(--line);
@@ -167,10 +225,24 @@
       position: relative;
       transition: border-color 0.15s, color 0.15s;
     }
-    .icon-btn:hover { border-color: var(--blue); color: var(--blue); }
 
-    .titleblock h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.2; }
-    .titleblock p { font-size: 12.5px; color: var(--ink-dim); margin-top: 2px; }
+    .icon-btn:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
+    .titleblock h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      line-height: 1.2;
+    }
+
+    .titleblock p {
+      font-size: 12.5px;
+      color: var(--ink-dim);
+      margin-top: 2px;
+    }
 
     .live-pill {
       display: inline-flex;
@@ -184,10 +256,7 @@
       padding: 4px 11px;
       margin-left: 6px;
     }
-    .live-pill.offline {
-      background: var(--amber-soft);
-      color: var(--amber);
-    }
+
     .dot {
       width: 7px;
       height: 7px;
@@ -195,17 +264,30 @@
       background: var(--green);
       animation: pulse 1.8s ease-out infinite;
     }
-    .live-pill.offline .dot {
-      background: var(--amber);
-      animation: none;
-    }
 
     @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.5); }
-      100% { box-shadow: 0 0 0 7px rgba(22, 163, 74, 0); }
+      0% {
+        box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.5);
+      }
+
+      100% {
+        box-shadow: 0 0 0 7px rgba(22, 163, 74, 0);
+      }
     }
 
-    .top-right { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+    @media (prefers-reduced-motion: reduce) {
+      .dot {
+        animation: none;
+      }
+    }
+
+    .top-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
     .bell-badge {
       position: absolute;
       top: -5px;
@@ -222,7 +304,13 @@
       padding: 0 4px;
       border: 2px solid var(--bg);
     }
-    .user { display: flex; align-items: center; gap: 10px; }
+
+    .user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     .avatar {
       width: 38px;
       height: 38px;
@@ -232,12 +320,30 @@
       display: grid;
       place-items: center;
     }
-    .user b { display: block; font-size: 13px; font-weight: 600; line-height: 1.25; }
-    .user span { font-size: 12px; color: var(--ink-dim); }
 
-    /* KPIs */
-    .kpis { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
-    .kpis.four { grid-template-columns: repeat(4, 1fr); }
+    .user b {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.25;
+    }
+
+    .user span {
+      font-size: 12px;
+      color: var(--ink-dim);
+    }
+
+    /* KPI cards */
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+    }
+
+    .kpis.four {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
     .kpi {
       background: var(--card);
       border: 1px solid var(--line);
@@ -245,10 +351,31 @@
       padding: 14px 16px 16px;
       box-shadow: var(--shadow);
     }
-    .kpi-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-    .kpi .k { font-size: 12.5px; color: var(--ink-dim); font-weight: 500; }
-    .kpi .v { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; margin-top: 8px; line-height: 1.1; }
-    .kpi .v.warn { color: var(--amber); }
+
+    .kpi-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .kpi .k {
+      font-size: 12.5px;
+      color: var(--ink-dim);
+      font-weight: 500;
+    }
+
+    .kpi .v {
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-top: 8px;
+      line-height: 1.1;
+    }
+
+    .kpi .v.warn {
+      color: var(--amber);
+    }
 
     .ic {
       width: 28px;
@@ -258,17 +385,49 @@
       place-items: center;
       flex: none;
     }
-    .ic svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .ic.green { background: var(--green-soft); color: var(--green); }
-    .ic.red { background: var(--red-soft); color: var(--red); }
-    .ic.blue { background: var(--blue-soft); color: var(--blue); }
-    .ic.amber { background: var(--amber-soft); color: var(--amber); }
 
-    /* Views */
-    .view { display: none; flex-direction: column; gap: 18px; }
-    .view.active { display: flex; }
+    .ic svg {
+      width: 15px;
+      height: 15px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
 
-    /* Panels */
+    .ic.green {
+      background: var(--green-soft);
+      color: var(--green);
+    }
+
+    .ic.red {
+      background: var(--red-soft);
+      color: var(--red);
+    }
+
+    .ic.blue {
+      background: var(--blue-soft);
+      color: var(--blue);
+    }
+
+    .ic.amber {
+      background: var(--amber-soft);
+      color: var(--amber);
+    }
+
+    /* ---------- Views ---------- */
+    .view {
+      display: none;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .view.active {
+      display: flex;
+    }
+
+    /* ---------- Panels ---------- */
     .panel {
       background: var(--card);
       border: 1px solid var(--line);
@@ -276,16 +435,37 @@
       box-shadow: var(--shadow);
       overflow: hidden;
     }
+
     .panel>header {
       padding: 16px 18px 12px;
       display: flex;
       align-items: center;
       gap: 8px;
     }
-    .panel>header h2 { font-size: 15px; font-weight: 600; letter-spacing: -0.005em; display: flex; align-items: center; }
-    .panel>header .sub { margin-left: auto; font-size: 12px; color: var(--ink-faint); }
-    .panel>header .hint { font-size: 12px; color: var(--ink-faint); font-weight: 400; }
-    .pad { padding: 4px 18px 18px; }
+
+    .panel>header h2 {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.005em;
+      display: flex;
+      align-items: center;
+    }
+
+    .panel>header .sub {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--ink-faint);
+    }
+
+    .panel>header .hint {
+      font-size: 12px;
+      color: var(--ink-faint);
+      font-weight: 400;
+    }
+
+    .pad {
+      padding: 4px 18px 18px;
+    }
 
     .grid-two {
       display: grid;
@@ -293,17 +473,22 @@
       gap: 18px;
       align-items: stretch;
     }
-    .tl-panel { position: relative; min-height: 420px; }
+
+    .tl-panel {
+      position: relative;
+      min-height: 380px;
+    }
+
     .tl-panel .timeline {
       position: absolute;
       left: 0;
       right: 0;
-      top: 64px;
+      top: 70px;
       bottom: 0;
       max-height: none;
     }
 
-    /* Plate badge */
+    /* ---------- Plate badge ---------- */
     .plate {
       display: inline-flex;
       align-items: center;
@@ -318,9 +503,19 @@
       border: 1px solid var(--line-strong);
       white-space: nowrap;
     }
-    .plate.warn { background: var(--amber-soft); border-color: #f1d7a3; color: #8a5200; }
-    .plate.lg { font-size: 14px; padding: 3px 10px; }
 
+    .plate.warn {
+      background: var(--amber-soft);
+      border-color: #f1d7a3;
+      color: #8a5200;
+    }
+
+    .plate.lg {
+      font-size: 14px;
+      padding: 3px 10px;
+    }
+
+    /* Status pill */
     .pill {
       display: inline-block;
       padding: 3px 11px;
@@ -330,12 +525,30 @@
       background: #eef1f5;
       color: #4b5563;
     }
-    .pill.flag { background: var(--red-soft); color: #c2343a; }
-    .pill.ok { background: var(--green-soft); color: #15803d; }
-    .pill.warn { background: var(--amber-soft); color: #8a5200; }
 
-    /* Inputs & Buttons */
-    .search-bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .pill.flag {
+      background: var(--red-soft);
+      color: #c2343a;
+    }
+
+    .pill.ok {
+      background: var(--green-soft);
+      color: #15803d;
+    }
+
+    .pill.warn {
+      background: var(--amber-soft);
+      color: #8a5200;
+    }
+
+    /* ---------- Buttons & inputs ---------- */
+    .search-bar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
     .search-bar input {
       background: #f8fafc;
       border: 1px solid var(--line-strong);
@@ -348,12 +561,14 @@
       flex: 1;
       min-width: 200px;
     }
+
     .search-bar input:focus {
       outline: none;
       border-color: var(--blue);
       box-shadow: 0 0 0 3px var(--blue-soft);
       background: #fff;
     }
+
     .btn-action {
       background: var(--blue);
       color: #fff;
@@ -364,7 +579,11 @@
       font-size: 13.5px;
       transition: background 0.15s;
     }
-    .btn-action:hover { background: var(--blue-dark); }
+
+    .btn-action:hover {
+      background: var(--blue-dark);
+    }
+
     .btn-ghost {
       background: #fff;
       border: 1px solid var(--line-strong);
@@ -375,7 +594,16 @@
       font-weight: 500;
       transition: border-color 0.15s, color 0.15s;
     }
-    .btn-ghost:hover { border-color: var(--blue); color: var(--blue); }
+
+    .btn-ghost:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--blue);
+      outline-offset: 2px;
+    }
 
     .chips {
       display: flex;
@@ -386,7 +614,11 @@
       font-size: 12px;
       color: var(--ink-faint);
     }
-    .chips em { font-style: normal; }
+
+    .chips em {
+      font-style: normal;
+    }
+
     .chips span {
       cursor: pointer;
       background: #f1f4f9;
@@ -398,14 +630,20 @@
       font-size: 11.5px;
       transition: background 0.15s, color 0.15s, border-color 0.15s;
     }
-    .chips span:hover { background: var(--blue-soft); border-color: #c5d6fa; color: var(--blue); }
 
-    /* Node Manager */
+    .chips span:hover {
+      background: var(--blue-soft);
+      border-color: #c5d6fa;
+      color: var(--blue);
+    }
+
+    /* ---------- Node manager ---------- */
     .node-mgr {
       background: #f8fafc;
       border-top: 1px solid var(--line);
       padding: 14px 18px 16px;
     }
+
     .node-mgr-head {
       display: flex;
       align-items: center;
@@ -414,10 +652,25 @@
       margin-bottom: 10px;
       flex-wrap: wrap;
     }
-    .node-mgr-head>span { font-size: 13px; font-weight: 600; color: var(--ink); }
-    .node-mgr-head small { color: var(--ink-faint); font-size: 11.5px; }
 
-    .node-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .node-mgr-head>span {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .node-mgr-head small {
+      color: var(--ink-faint);
+      font-size: 11.5px;
+    }
+
+    .node-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
     .node-chip {
       display: inline-flex;
       align-items: center;
@@ -428,8 +681,18 @@
       padding: 4px 8px;
       font-size: 12px;
     }
-    .node-chip b { color: var(--blue); font-size: 11.5px; font-weight: 600; }
-    .node-chip .coords { color: var(--ink-faint); font-size: 11px; font-family: var(--mono); }
+
+    .node-chip b {
+      color: var(--blue);
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+
+    .node-chip .coords {
+      color: var(--ink-faint);
+      font-size: 11px;
+    }
+
     .node-chip button {
       background: none;
       border: 0;
@@ -438,14 +701,18 @@
       line-height: 1;
       padding: 0 2px;
     }
-    .node-chip button:hover { color: var(--red); }
+
+    .node-chip button:hover {
+      color: var(--red);
+    }
 
     .node-form {
       display: grid;
-      grid-template-columns: 110px 1.4fr 110px 110px auto;
+      grid-template-columns: 110px 1.4fr 90px 90px auto;
       gap: 8px;
       align-items: center;
     }
+
     .node-form input {
       background: #fff;
       border: 1px solid var(--line-strong);
@@ -455,51 +722,51 @@
       font-size: 12.5px;
       font-family: var(--sans);
     }
+
     .node-form input:focus {
       outline: none;
       border-color: var(--blue);
       box-shadow: 0 0 0 3px var(--blue-soft);
     }
-    .node-form .btn-action { padding: 8px 14px; font-size: 12.5px; }
 
-    /* Map (Leaflet) */
+    .node-form .btn-action {
+      padding: 8px 14px;
+      font-size: 12.5px;
+    }
+
+    /* ---------- Map ---------- */
     .mapwrap {
       border: 1px solid var(--line);
       border-radius: 10px;
       overflow: hidden;
-      height: 420px;
-      position: relative;
-      z-index: 1;
+      background: #eef2f7;
     }
-    #gisMap { width: 100%; height: 100%; }
 
-    /* Custom Leaflet Pin Markers */
-    .gis-pin {
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: #2563eb;
-      color: #fff;
-      font-weight: 700;
-      font-size: 11px;
-      display: grid;
-      place-items: center;
-      border: 2px solid #ffffff;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    .mapwrap svg {
+      display: block;
+      width: 100%;
+      height: auto;
     }
-    .gis-pin.alert { background: #e5484d; }
-    .gis-pin.active { background: #16a34a; transform: scale(1.25); }
 
-    /* Timeline */
+    /* ---------- Timeline ---------- */
     .timeline {
-      max-height: 420px;
+      max-height: 470px;
       overflow-y: auto;
       padding: 4px 18px 18px;
       display: flex;
       flex-direction: column;
     }
-    .tl-ev { position: relative; padding: 0 0 20px 24px; cursor: pointer; }
-    .tl-ev:last-child { padding-bottom: 0; }
+
+    .tl-ev {
+      position: relative;
+      padding: 0 0 20px 24px;
+      cursor: pointer;
+    }
+
+    .tl-ev:last-child {
+      padding-bottom: 0;
+    }
+
     .tl-ev::before {
       content: "";
       position: absolute;
@@ -509,7 +776,11 @@
       width: 2px;
       background: var(--line-strong);
     }
-    .tl-ev:last-child::before { display: none; }
+
+    .tl-ev:last-child::before {
+      display: none;
+    }
+
     .tl-ev::after {
       content: "";
       position: absolute;
@@ -522,17 +793,84 @@
       border: 2px solid #fff;
       box-shadow: 0 0 0 1px var(--line-strong);
     }
-    .tl-ev.active::after { background: var(--blue); box-shadow: 0 0 0 1px var(--blue), 0 0 0 4px var(--blue-soft); }
-    .tl-ev.flagged::after { background: var(--red); box-shadow: 0 0 0 1px var(--red); }
-    .tl-ev.flagged.active::after { box-shadow: 0 0 0 1px var(--red), 0 0 0 4px var(--red-soft); }
-    .tl-time { font-size: 12px; color: var(--ink-dim); }
-    .tl-ev.flagged .tl-time { color: var(--red); font-weight: 600; }
-    .tl-loc { font-size: 14px; font-weight: 600; margin-top: 1px; transition: color 0.15s; }
-    .tl-ev:hover .tl-loc { color: var(--blue); }
-    .tl-meta { font-size: 12px; color: var(--ink-faint); margin-top: 1px; }
-    .empty { padding: 30px 18px; color: var(--ink-faint); font-size: 13px; text-align: center; }
 
-    /* Tables */
+    .tl-ev.active::after {
+      background: var(--blue);
+      box-shadow: 0 0 0 1px var(--blue), 0 0 0 4px var(--blue-soft);
+    }
+
+    .tl-ev.flagged::after {
+      background: var(--red);
+      box-shadow: 0 0 0 1px var(--red);
+    }
+
+    .tl-ev.flagged.active::after {
+      box-shadow: 0 0 0 1px var(--red), 0 0 0 4px var(--red-soft);
+    }
+
+    .tl-time {
+      font-size: 12px;
+      color: var(--ink-dim);
+    }
+
+    .tl-ev.flagged .tl-time {
+      color: var(--red);
+      font-weight: 600;
+    }
+
+    .tl-loc {
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 1px;
+      transition: color 0.15s;
+    }
+
+    .tl-ev:hover .tl-loc {
+      color: var(--blue);
+    }
+
+    .tl-meta {
+      font-size: 12px;
+      color: var(--ink-faint);
+      margin-top: 1px;
+    }
+
+    .tl-thumb {
+      margin-top: 9px;
+      height: 78px;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #f4f7fb, #e7ecf3);
+      border: 1px solid var(--line);
+      display: grid;
+      place-items: center;
+    }
+
+    .tl-thumb svg {
+      height: 50px;
+      width: auto;
+    }
+
+    .tl-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 9px;
+      display: block;
+    }
+
+    .tl-ev.active .tl-thumb {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px var(--blue-soft);
+    }
+
+    .empty {
+      padding: 30px 18px;
+      color: var(--ink-faint);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    /* ---------- Tables ---------- */
     .tbl-wrap {
       margin: 4px 18px 18px;
       border: 1px solid var(--line);
@@ -540,7 +878,13 @@
       overflow: hidden;
       overflow-x: auto;
     }
-    .tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+    .tbl {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
     .tbl th {
       text-align: left;
       padding: 11px 14px;
@@ -551,12 +895,27 @@
       border-bottom: 1px solid var(--line);
       white-space: nowrap;
     }
-    .tbl td { padding: 11px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-    .tbl tr:last-child td { border-bottom: 0; }
-    .tbl td.t { color: var(--ink-dim); font-family: var(--mono); }
-    .tbl td.conf { color: var(--green); font-weight: 600; }
 
-    /* Alerts */
+    .tbl td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    .tbl tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .tbl td.t {
+      color: var(--ink-dim);
+    }
+
+    .tbl td.conf {
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    /* ---------- Alerts ---------- */
     .alert-card {
       padding: 14px 18px;
       border-top: 1px solid var(--line);
@@ -567,12 +926,36 @@
       cursor: pointer;
       transition: background 0.15s;
     }
-    .alert-card:hover { background: #f8fafc; }
-    .alert-card .spine { align-self: stretch; background: var(--amber); border-radius: 4px; }
-    .alert-card.hi .spine { background: var(--red); }
-    .alert-card.lo .spine { background: var(--blue); }
-    .alert-card h3 { font-size: 14px; font-weight: 600; }
-    .alert-card p { font-size: 13px; color: var(--ink-dim); margin-top: 2px; }
+
+    .alert-card:hover {
+      background: #f8fafc;
+    }
+
+    .alert-card .spine {
+      align-self: stretch;
+      background: var(--amber);
+      border-radius: 4px;
+    }
+
+    .alert-card.hi .spine {
+      background: var(--red);
+    }
+
+    .alert-card.lo .spine {
+      background: var(--blue);
+    }
+
+    .alert-card h3 {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .alert-card p {
+      font-size: 13px;
+      color: var(--ink-dim);
+      margin-top: 2px;
+    }
+
     .alert-card .reason {
       margin-top: 8px;
       background: #f5f7fa;
@@ -584,18 +967,48 @@
       display: inline-block;
     }
 
+    /* ---------- Responsive ---------- */
     @media (max-width: 1200px) {
-      .kpis { grid-template-columns: repeat(3, 1fr); }
-      .grid-two { grid-template-columns: 1fr; }
-      .tl-panel { min-height: 0; }
-      .tl-panel .timeline { position: static; max-height: 380px; }
+      .kpis {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .grid-two {
+        grid-template-columns: 1fr;
+      }
+
+      .tl-panel {
+        min-height: 0;
+      }
+
+      .tl-panel .timeline {
+        position: static;
+        max-height: 420px;
+      }
     }
+
     @media (max-width: 760px) {
-      .kpis, .kpis.four { grid-template-columns: repeat(2, 1fr); }
-      .main { padding: 16px; }
-      .node-form { grid-template-columns: 1fr 1fr; }
-      .top-right .user div { display: none; }
-      .live-pill { display: none; }
+
+      .kpis,
+      .kpis.four {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .main {
+        padding: 16px;
+      }
+
+      .node-form {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .top-right .user div {
+        display: none;
+      }
+
+      .live-pill {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -603,12 +1016,13 @@
 <body>
 
   <div class="shell" id="shell">
-    <!-- Sidebar -->
+    <!-- Left Collapsible Rail -->
     <aside class="rail">
       <div class="brand">
         <div class="logo">
           <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path fill="#3b82f6" d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11h.5A1.5 1.5 0 0 1 21 12.5V17a1 1 0 0 1-1 1h-1a2 2 0 0 1-4 0H9a2 2 0 0 1-4 0H4a1 1 0 0 1-1-1v-4.5A1.5 1.5 0 0 1 4.5 11z" />
+            <path fill="#3b82f6"
+              d="M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11h.5A1.5 1.5 0 0 1 21 12.5V17a1 1 0 0 1-1 1h-1a2 2 0 0 1-4 0H9a2 2 0 0 1-4 0H4a1 1 0 0 1-1-1v-4.5A1.5 1.5 0 0 1 4.5 11z" />
             <path fill="#1a1f2b" opacity=".4" d="M8.3 7h7.4l.9 3.5H7.4z" />
           </svg>
           <div>City<span>ANPR</span></div>
@@ -617,26 +1031,37 @@
       </div>
       <nav class="nav">
         <button class="nav-btn active" data-v="track">
-          <svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" /><path d="M12 2v4M12 18v4M2 12h4M18 12h4" /></svg>
+          <svg class="i" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+          </svg>
           Trace a Plate
         </button>
         <button class="nav-btn" data-v="live">
-          <svg class="i" viewBox="0 0 24 24"><path d="M3 7h11a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H3z" /><path d="m16 11 5-3v8l-5-3" /></svg>
+          <svg class="i" viewBox="0 0 24 24">
+            <path d="M3 7h11a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H3z" />
+            <path d="m16 11 5-3v8l-5-3" />
+          </svg>
           Live Capture
         </button>
         <button class="nav-btn" data-v="flow">
-          <svg class="i" viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4" /></svg>
+          <svg class="i" viewBox="0 0 24 24">
+            <path d="M3 12h4l3-8 4 16 3-8h4" />
+          </svg>
           City Flow
         </button>
         <button class="nav-btn" data-v="alerts">
-          <svg class="i" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
+          <svg class="i" viewBox="0 0 24 24">
+            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+          </svg>
           Alerts <span class="badge" id="navBadge">0</span>
         </button>
       </nav>
       <div class="railfoot">
         <div>Nodes: <b id="railNodeCount">6 Active</b></div>
-        <div>Ingest: <b id="railIngest">182/min</b></div>
-        <div>API Mode: <b id="railConnStatus" style="color:var(--green);">Connected</b></div>
+        <div>Ingest: <b>182/min</b></div>
+        <div>Lag: <b>0.8s</b></div>
       </div>
     </aside>
 
@@ -644,22 +1069,28 @@
       <!-- Top bar -->
       <header class="topbar">
         <button class="icon-btn" id="toggleNav" title="Toggle navigation" aria-label="Toggle navigation">
-          <svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+          <svg class="i" viewBox="0 0 24 24">
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
         </button>
         <div class="titleblock">
           <h1>Citywide ANPR Dashboard</h1>
           <p id="sClock">Date/Time: --</p>
         </div>
-        <span class="live-pill" id="livePill"><span class="dot"></span><span id="livePillText">Online (Live API)</span></span>
+        <span class="live-pill"><span class="dot"></span>Online</span>
         <div class="top-right">
           <button class="icon-btn" id="bellBtn" title="View alerts" aria-label="View alerts">
-            <svg class="i" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
+            <svg class="i" viewBox="0 0 24 24">
+              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+            </svg>
             <span class="bell-badge" id="bellBadge">0</span>
           </button>
           <div class="user">
-            <div class="avatar">
-              <svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>
-            </div>
+            <div class="avatar"><svg class="i" viewBox="0 0 24 24">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 21a8 8 0 0 1 16 0" />
+              </svg></div>
             <div><b>Admin</b><span>Control Room</span></div>
           </div>
         </div>
@@ -668,27 +1099,44 @@
       <!-- KPI cards -->
       <section class="kpis">
         <div class="kpi">
-          <div class="kpi-top"><span class="k">Active Cameras</span><span class="ic green"><svg viewBox="0 0 24 24"><path d="M3 7h11a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H3z" /><path d="m16 11 5-3v8l-5-3" /></svg></span></div>
+          <div class="kpi-top"><span class="k">Active Cameras</span><span class="ic green"><svg viewBox="0 0 24 24">
+                <path d="M3 7h11a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H3z" />
+                <path d="m16 11 5-3v8l-5-3" />
+              </svg></span></div>
           <div class="v" id="topCamCount">6</div>
         </div>
         <div class="kpi">
-          <div class="kpi-top"><span class="k">Detections</span><span class="ic green"><svg viewBox="0 0 24 24"><path d="M3 12h4l3-8 4 16 3-8h4" /></svg></span></div>
+          <div class="kpi-top"><span class="k">Detections</span><span class="ic green"><svg viewBox="0 0 24 24">
+                <path d="M3 12h4l3-8 4 16 3-8h4" />
+              </svg></span></div>
           <div class="v" id="sDetections">14,892</div>
         </div>
         <div class="kpi">
-          <div class="kpi-top"><span class="k">Flagged</span><span class="ic red"><svg viewBox="0 0 24 24"><path d="M4 22V4M4 4h13l-2 4 2 4H4" /></svg></span></div>
+          <div class="kpi-top"><span class="k">Flagged</span><span class="ic red"><svg viewBox="0 0 24 24">
+                <path d="M4 22V4M4 4h13l-2 4 2 4H4" />
+              </svg></span></div>
           <div class="v" id="sFlagged">18</div>
         </div>
         <div class="kpi">
-          <div class="kpi-top"><span class="k">Stolen Vehicles</span><span class="ic red"><svg viewBox="0 0 24 24"><path d="M3 17v-4l2-6a2 2 0 0 1 2-1h10a2 2 0 0 1 2 1l2 6v4z" /><circle cx="7.5" cy="17" r="1.5" /><circle cx="16.5" cy="17" r="1.5" /></svg></span></div>
-          <div class="v" id="sStolen">3</div>
+          <div class="kpi-top"><span class="k">Stolen Vehicles</span><span class="ic red"><svg viewBox="0 0 24 24">
+                <path d="M3 17v-4l2-6a2 2 0 0 1 2-1h10a2 2 0 0 1 2 1l2 6v4z" />
+                <circle cx="7.5" cy="17" r="1.5" />
+                <circle cx="16.5" cy="17" r="1.5" />
+              </svg></span></div>
+          <div class="v">3</div>
         </div>
         <div class="kpi">
-          <div class="kpi-top"><span class="k">Open Alerts</span><span class="ic amber"><svg viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" /><path d="M12 9v4M12 17h.01" /></svg></span></div>
+          <div class="kpi-top"><span class="k">Open Alerts</span><span class="ic amber"><svg viewBox="0 0 24 24">
+                <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />
+                <path d="M12 9v4M12 17h.01" />
+              </svg></span></div>
           <div class="v" id="topAlertCount">0</div>
         </div>
         <div class="kpi">
-          <div class="kpi-top"><span class="k">Read Accuracy</span><span class="ic blue"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="m8 12 3 3 5-6" /></svg></span></div>
+          <div class="kpi-top"><span class="k">Read Accuracy</span><span class="ic blue"><svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" />
+                <path d="m8 12 3 3 5-6" />
+              </svg></span></div>
           <div class="v">94.2%</div>
         </div>
       </section>
@@ -702,7 +1150,8 @@
           </header>
           <div class="pad">
             <div class="search-bar">
-              <input id="plateInput" placeholder="PB10 EK 4521" value="PB10 EK 4521" autocomplete="off" spellcheck="false">
+              <input id="plateInput" placeholder="PB10 EK 4521" value="PB10 EK 4521" autocomplete="off"
+                spellcheck="false">
               <button class="btn-action" id="traceBtn">Trace route</button>
               <button class="btn-ghost" id="clearBtn">Reset</button>
               <button class="btn-ghost" id="toggleNodeMgrBtn">+ Manage camera nodes</button>
@@ -715,19 +1164,19 @@
             </div>
           </div>
 
-          <!-- Dynamic Node Management Drawer -->
+          <!-- Node Management Drawer (hidden until opened) -->
           <div class="node-mgr" id="nodeMgrSection" style="display:none;">
             <div class="node-mgr-head">
-              <span>Configured GIS Camera Nodes (<span id="nodeListCount">0</span>)</span>
-              <small>Ludhiana GPS Grid: Lat ~30.85-30.98, Lng ~75.78-75.92</small>
+              <span>Configured camera nodes (<span id="nodeListCount">0</span>)</span>
+              <small>Map bounds: X 40–760, Y 40–360</small>
             </div>
             <div class="node-chips" id="nodeChipsContainer"></div>
 
             <form class="node-form" id="addNodeForm" onsubmit="return false;">
               <input type="text" id="newCamId" placeholder="ID (e.g. LDH-07)" required spellcheck="false">
               <input type="text" id="newCamName" placeholder="Junction name" required>
-              <input type="number" step="0.0001" id="newCamLat" placeholder="Latitude (e.g. 30.91)" required>
-              <input type="number" step="0.0001" id="newCamLng" placeholder="Longitude (e.g. 75.85)" required>
+              <input type="number" id="newCamX" placeholder="X (px)" min="20" max="780" required>
+              <input type="number" id="newCamY" placeholder="Y (px)" min="20" max="380" required>
               <button type="button" class="btn-action" id="addCamBtn">+ Add node</button>
             </form>
           </div>
@@ -737,19 +1186,17 @@
           <div class="panel">
             <header>
               <h2 id="traceTitle"><span class="plate lg">PB10 EK 4521</span></h2>
-              <span class="sub" id="traceCount">0 sightings</span>
+              <span class="sub" id="traceCount">6 sightings</span>
             </header>
             <div class="pad">
-              <div class="mapwrap">
-                <div id="gisMap"></div>
-              </div>
+              <div class="mapwrap" id="mapWrap"></div>
             </div>
           </div>
           <div class="panel tl-panel">
             <header>
               <div>
                 <h2>Timeline</h2>
-                <div class="hint">Sightings in order · click one to highlight node</div>
+                <div class="hint">Sightings in order · click one to highlight it</div>
               </div>
             </header>
             <div class="timeline" id="timelineList"></div>
@@ -758,7 +1205,7 @@
 
         <div class="panel">
           <header>
-            <h2>Recent Vehicle Detections</h2><span class="sub">Live Feed Ingest</span>
+            <h2>Recent Vehicle Detections</h2><span class="sub">Live</span>
           </header>
           <div class="tbl-wrap">
             <table class="tbl">
@@ -782,7 +1229,7 @@
       <section class="view" id="view-live">
         <div class="panel">
           <header>
-            <h2>Real-Time Ingestion Stream</h2><span class="sub">PostGIS Ingest Engine</span>
+            <h2>Real-Time Ingestion Stream</h2><span class="sub">PostGIS ingest engine</span>
           </header>
           <div class="tbl-wrap">
             <table class="tbl">
@@ -806,23 +1253,25 @@
         <div class="kpis four">
           <div class="kpi">
             <div class="kpi-top"><span class="k">Total Reads Today</span></div>
-            <div class="v" id="flowTotalReads">418,332</div>
+            <div class="v">418,332</div>
           </div>
           <div class="kpi">
             <div class="kpi-top"><span class="k">Network Avg Speed</span></div>
-            <div class="v" id="flowAvgSpeed">27.4 km/h</div>
+            <div class="v">27.4 km/h</div>
           </div>
           <div class="kpi">
             <div class="kpi-top"><span class="k">Active Bottlenecks</span></div>
-            <div class="v warn" id="flowBottlenecks">3 nodes</div>
+            <div class="v warn">3 nodes</div>
           </div>
           <div class="kpi">
             <div class="kpi-top"><span class="k">Repeat Commuters</span></div>
-            <div class="v" id="flowRepeat">31.2%</div>
+            <div class="v">31.2%</div>
           </div>
         </div>
         <div class="panel">
-          <header><h2>Corridor Congestion &amp; Speeds</h2></header>
+          <header>
+            <h2>Corridor Congestion &amp; Speeds</h2>
+          </header>
           <div class="tbl-wrap">
             <table class="tbl">
               <thead>
@@ -866,153 +1315,59 @@
     </div>
   </div>
 
-  <!-- Leaflet GIS JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
   <script>
-    // ---------- API & Endpoint Configuration ----------
-    const BACKEND_HOST = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" 
-      ? "localhost:8000" 
-      : window.location.host;
+    // ---------- API Configuration ----------
+    const API_BASE = window.location.origin;
+    const WS_BASE = API_BASE.replace('http', 'ws');
 
-    const API_BASE = `http://${BACKEND_HOST}/api`;
-    const WS_LIVE_URL = `ws://${BACKEND_HOST}/ws/live-feed`;
-    const WS_ALERTS_URL = `ws://${BACKEND_HOST}/ws/alerts`;
-
-    let backendReachable = false;
-
-    // Helper: HTML escape
+    // ---------- Helpers ----------
     const esc = s => String(s).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
 
-    // ---------- Real Ludhiana GIS Camera Nodes ----------
-    let CAMS = {
-      "LDH-14": { id: "LDH-14", name: "Jalandhar Bypass (W)", lat: 30.9578, lng: 75.8285 },
-      "LDH-06": { id: "LDH-06", name: "Jagraon Bridge",       lat: 30.9085, lng: 75.8452 },
-      "LDH-05": { id: "LDH-05", name: "Clock Tower",          lat: 30.9125, lng: 75.8540 },
-      "LDH-04": { id: "LDH-04", name: "Dholewal Chowk",       lat: 30.8920, lng: 75.8670 },
-      "LDH-03": { id: "LDH-03", name: "Sherpur Chowk",        lat: 30.8990, lng: 75.8920 },
-      "LDH-01": { id: "LDH-01", name: "Samrala Chowk",        lat: 30.9150, lng: 75.8850 }
-    };
-
-    let activeCurrentPlate = "PB10 EK 4521";
-
-    // Resilient fallback dataset if backend is offline
-    const MOCK_TRACES = {
-      "PB10 EK 4521": [
-        { cam: "LDH-14", t: "07:42:11", speed: 58, dir: "Eastbound", conf: 0.97 },
-        { cam: "LDH-06", t: "07:49:03", speed: 41, dir: "Eastbound", conf: 0.94 },
-        { cam: "LDH-05", t: "07:53:47", speed: 28, dir: "Eastbound", conf: 0.88 },
-        { cam: "LDH-04", t: "08:04:22", speed: 36, dir: "Northbound", conf: 0.96 },
-        { cam: "LDH-03", t: "08:11:09", speed: 52, dir: "Northbound", conf: 0.95 },
-        { cam: "LDH-01", t: "08:18:40", speed: 61, dir: "Northbound", conf: 0.98 }
-      ],
-      "PB10 CQ 8871": [
-        { cam: "LDH-05", t: "21:28:15", speed: 44, dir: "Eastbound", conf: 0.93 },
-        { cam: "LDH-04", t: "21:36:02", speed: 35, dir: "Eastbound", conf: 0.95 },
-        { cam: "LDH-03", t: "21:44:57", speed: 51, dir: "Eastbound", conf: 0.97, alert: true }
-      ],
-      "HR26 BT 9003": [
-        { cam: "LDH-05", t: "14:02:18", speed: 31, dir: "Southbound", conf: 0.96 },
-        { cam: "LDH-06", t: "14:16:30", speed: 33, dir: "Northbound", conf: 0.92 },
-        { cam: "LDH-05", t: "14:40:22", speed: 26, dir: "Southbound", conf: 0.97, alert: true }
-      ]
-    };
-
-    let ALERTS_DATA = [
-      { sev: "hi", plate: "PB10 CQ 8871", title: "Blacklisted Vehicle Sighted", body: "Vehicle flagged under FIR 0412/2026 (Stolen). Sighted at Sherpur Chowk.", why: "NCRB Registry Match · Auto-flagged" },
-      { sev: "hi", plate: "PB10 EK 4521", title: "Plate Duplication / Velocity Anomaly", body: "Two sightings 18km apart within 3 minutes. Physical speed exceeds 340 km/h.", why: "Spatial Distance Check · PostGIS Anomaly" },
-      { sev: "lo", plate: "PB65 TR 2204", title: "Restricted Corridor Violation", body: "Heavy goods vehicle entered Mall Road during peak hours (09:00 - 21:00).", why: "Zonal Restriction Rule" }
-    ];
-
-    // ---------- Leaflet GIS Initialization ----------
-    let map = null;
-    let mapRouteLine = null;
-    let mapMarkers = [];
-
-    function initLeafletMap() {
-      if (map) return;
-      // Centered on Ludhiana Municipal Center
-      map = L.map("gisMap", { zoomControl: true }).setView([30.9100, 75.8550], 12);
-      
-      // Clean CartoDB Positron / OSM Light Tiles
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-        attribution: '&copy; <a href="https://carto.com/">CARTO</a>, &copy; OpenStreetMap',
-        maxZoom: 18,
-        minZoom: 10
-      }).addTo(map);
-
-      // Invalidate map size whenever view switches to ensure correct tile rendering
-      setTimeout(() => map.invalidateSize(), 200);
-    }
-
-    function renderGisMap(sightings, activeIdx = -1) {
-      if (!map) initLeafletMap();
-
-      // Clear existing markers & lines
-      if (mapRouteLine) map.removeLayer(mapRouteLine);
-      mapMarkers.forEach(m => map.removeLayer(m));
-      mapMarkers = [];
-
-      const activeSightings = sightings.filter(s => CAMS[s.cam]);
-      const latlngs = [];
-
-      // 1. Draw persistent camera node pins
-      Object.values(CAMS).forEach(c => {
-        const baseIcon = L.divIcon({
-          className: "custom-pin",
-          html: `<div style="background:#64748b;width:10px;height:10px;border-radius:50%;border:2px solid #fff;"></div>`,
-          iconSize: [10, 10]
-        });
-        const marker = L.marker([c.lat, c.lng], { icon: baseIcon })
-          .bindTooltip(`<b>${c.id}</b>: ${c.name}`, { direction: "top", offset: [0, -6] })
-          .addTo(map);
-        mapMarkers.push(marker);
-      });
-
-      // 2. Draw route trajectory checkpoints
-      activeSightings.forEach((s, idx) => {
-        const c = CAMS[s.cam];
-        const point = [c.lat, c.lng];
-        latlngs.push(point);
-
-        const isAct = idx === activeIdx;
-        const cls = s.alert ? "gis-pin alert" : isAct ? "gis-pin active" : "gis-pin";
-
-        const pinIcon = L.divIcon({
-          className: "custom-pin-wrap",
-          html: `<div class="${cls}">${idx + 1}</div>`,
-          iconSize: [24, 24],
-          iconAnchor: [12, 12]
-        });
-
-        const m = L.marker(point, { icon: pinIcon })
-          .bindPopup(`<b>Checkpoint ${idx + 1}: ${c.name}</b><br>Time: ${s.t}<br>Speed: ${s.speed} km/h<br>Confidence: ${(s.conf * 100).toFixed(1)}%`)
-          .addTo(map);
-
-        if (isAct) m.openPopup();
-        mapMarkers.push(m);
-      });
-
-      // 3. Draw connecting trajectory polyline
-      if (latlngs.length > 1) {
-        mapRouteLine = L.polyline(latlngs, {
-          color: "#2563eb",
-          weight: 4,
-          opacity: 0.85,
-          dashArray: "6, 8",
-          lineCap: "round"
-        }).addTo(map);
-
-        map.fitBounds(mapRouteLine.getBounds(), { padding: [40, 40] });
-      } else if (latlngs.length === 1) {
-        map.setView(latlngs[0], 13);
+    async function apiFetch(path) {
+      try {
+        const res = await fetch(`${API_BASE}${path}`);
+        if (!res.ok) return null;
+        return await res.json();
+      } catch (e) {
+        console.warn(`API fetch failed: ${path}`, e);
+        return null;
       }
     }
 
-    // ---------- Navigation & Layout ----------
+    // Placeholder car image for the timeline.
+    const CAR_SVG = `<svg viewBox="0 0 120 50" fill="none" aria-hidden="true">
+  <path d="M8 36v-8q0-4 5-5l16-3 12-11q2-2 5-2h30q3 0 5 2l11 11 14 3q6 1 6 6v7z" fill="#b9c5d6"/>
+  <path d="M44 20l9-9h12v9zM69 20v-9h9l9 9z" fill="#e6ecf4"/>
+  <circle cx="32" cy="37" r="7" fill="#475569"/><circle cx="32" cy="37" r="3" fill="#cbd5e1"/>
+  <circle cx="88" cy="37" r="7" fill="#475569"/><circle cx="88" cy="37" r="3" fill="#cbd5e1"/>
+</svg>`;
+
+    // Decorative map backdrop
+    const MAP_BG = `
+  <rect width="800" height="400" fill="#eef2f7"/>
+  <ellipse cx="90" cy="62" rx="62" ry="30" fill="#e0eee3"/>
+  <ellipse cx="700" cy="335" rx="46" ry="22" fill="#e0eee3"/>
+  <rect x="240" y="110" rx="34" width="350" height="215" fill="#f5efd8" opacity=".6"/>
+  <path d="M-10 362C120 328 240 386 380 362S640 328 810 362V410H-10Z" fill="#d8e5f0"/>
+  <g fill="none" stroke="#e1e7ef" stroke-width="2">
+    <path d="M0 40H800M0 150H800M0 260H800M0 340H800"/><path d="M60 0V400M330 0V400M560 0V400M760 0V400"/>
+  </g>
+  <g fill="none" stroke="#ffffff" stroke-linecap="round">
+    <path d="M0 96L800 64" stroke-width="7"/>
+    <path d="M0 214C200 204 400 262 800 182" stroke-width="9"/>
+    <path d="M150 0L205 400" stroke-width="6"/>
+    <path d="M450 0L418 400" stroke-width="8"/>
+    <path d="M650 0L702 400" stroke-width="6"/>
+  </g>
+  <text x="415" y="146" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-weight="600" letter-spacing="3" fill="#b6bfca">CITY CENTRE</text>`;
+
+    // ---------- Data (loaded from API) ----------
+    let CAMS = {};
+    let activeCurrentPlate = "";
+
+    // ---------- Navigation ----------
     document.getElementById("toggleNav").addEventListener("click", () => {
       document.getElementById("shell").classList.toggle("collapsed");
-      setTimeout(() => { if (map) map.invalidateSize(); }, 250);
     });
 
     document.querySelectorAll(".nav-btn").forEach(b => {
@@ -1020,11 +1375,7 @@
         document.querySelectorAll(".nav-btn").forEach(btn => btn.classList.remove("active"));
         document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
         b.classList.add("active");
-        const activeView = document.getElementById("view-" + b.dataset.v);
-        activeView.classList.add("active");
-        if (b.dataset.v === "track" && map) {
-          setTimeout(() => map.invalidateSize(), 150);
-        }
+        document.getElementById("view-" + b.dataset.v).classList.add("active");
       });
     });
 
@@ -1032,7 +1383,7 @@
       document.querySelector('.nav-btn[data-v="alerts"]').click();
     });
 
-    // ---------- Camera Node Configuration ----------
+    // ---------- Camera nodes ----------
     function updateCameraNodeCounts() {
       const total = Object.keys(CAMS).length;
       document.getElementById("topCamCount").textContent = total;
@@ -1048,11 +1399,11 @@
         const chip = document.createElement("div");
         chip.className = "node-chip";
         chip.innerHTML = `
-          <b>${esc(cam.id)}</b>
-          <span>${esc(cam.name)}</span>
-          <span class="coords">(${cam.lat.toFixed(4)}, ${cam.lng.toFixed(4)})</span>
-          <button title="Remove ${esc(cam.id)}" data-id="${esc(cam.id)}">✕</button>
-        `;
+      <b>${esc(cam.id)}</b>
+      <span>${esc(cam.name)}</span>
+      <span class="coords">(${cam.x}, ${cam.y})</span>
+      <button title="Remove ${esc(cam.id)}" data-id="${esc(cam.id)}">✕</button>
+    `;
         chip.querySelector("button").addEventListener("click", (e) => {
           e.stopPropagation();
           removeCameraNode(cam.id);
@@ -1062,55 +1413,49 @@
       updateCameraNodeCounts();
     }
 
-    async function addCameraNode(id, name, lat, lng) {
+    function addCameraNode(id, name, x, y) {
       const cleanId = id.trim().toUpperCase();
       const cleanName = name.trim();
-      const pLat = parseFloat(lat);
-      const pLng = parseFloat(lng);
+      const posX = parseInt(x, 10);
+      const posY = parseInt(y, 10);
 
-      if (!cleanId || !cleanName || isNaN(pLat) || isNaN(pLng)) return;
+      if (!cleanId || !cleanName || isNaN(posX) || isNaN(posY)) return;
 
-      CAMS[cleanId] = { id: cleanId, name: cleanName, lat: pLat, lng: pLng };
-
-      // Optional sync with backend if running
-      if (backendReachable) {
-        try {
-          await fetch(`${API_BASE}/cameras`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(CAMS[cleanId])
-          });
-        } catch (e) { console.warn("Failed to persist node to backend", e); }
-      }
+      CAMS[cleanId] = { id: cleanId, name: cleanName, x: posX, y: posY };
 
       renderNodeChips();
-      runTrace(activeCurrentPlate);
+      if (activeCurrentPlate) runTrace(activeCurrentPlate);
     }
 
     function removeCameraNode(id) {
       if (Object.keys(CAMS).length <= 2) {
-        alert("Minimum 2 camera nodes required for GIS corridor trajectory mapping.");
+        alert("Minimum 2 camera nodes required for corridor route calculations.");
         return;
       }
       delete CAMS[id];
       renderNodeChips();
-      runTrace(activeCurrentPlate);
+      if (activeCurrentPlate) runTrace(activeCurrentPlate);
     }
 
     document.getElementById("addCamBtn").addEventListener("click", () => {
       const idInput = document.getElementById("newCamId");
       const nameInput = document.getElementById("newCamName");
-      const latInput = document.getElementById("newCamLat");
-      const lngInput = document.getElementById("newCamLng");
+      const xInput = document.getElementById("newCamX");
+      const yInput = document.getElementById("newCamY");
 
-      if (!idInput.value || !nameInput.value || !latInput.value || !lngInput.value) {
-        alert("Please enter ID, Name, Latitude, and Longitude.");
+      if (!idInput.value || !nameInput.value || !xInput.value || !yInput.value) {
+        alert("Please enter ID, Name, X, and Y values.");
         return;
       }
-      addCameraNode(idInput.value, nameInput.value, latInput.value, lngInput.value);
-      idInput.value = ""; nameInput.value = ""; latInput.value = ""; lngInput.value = "";
+
+      addCameraNode(idInput.value, nameInput.value, xInput.value, yInput.value);
+      idInput.value = "";
+      nameInput.value = "";
+      xInput.value = "";
+      yInput.value = "";
     });
 
+    // Node manager toggle
     const toggleNodeMgrBtn = document.getElementById("toggleNodeMgrBtn");
     const nodeMgrSection = document.getElementById("nodeMgrSection");
     toggleNodeMgrBtn.addEventListener("click", () => {
@@ -1119,7 +1464,51 @@
       toggleNodeMgrBtn.textContent = isHidden ? "− Hide node manager" : "+ Manage camera nodes";
     });
 
-    // ---------- Trajectory Sighting Timeline ----------
+    // ---------- Map ----------
+    function renderMap(sightings, activeIdx = -1) {
+      const activeSightings = sightings.filter(s => CAMS[s.cam]);
+
+      let lines = "";
+      for (let i = 1; i < activeSightings.length; i++) {
+        const p1 = CAMS[activeSightings[i - 1].cam];
+        const p2 = CAMS[activeSightings[i].cam];
+        if (p1 && p2) {
+          lines += `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="#2563eb" stroke-width="3.5" stroke-linecap="round" stroke-opacity=".92"/>`;
+        }
+      }
+
+      let nodes = "";
+      Object.values(CAMS).forEach(c => {
+        const flip = c.x > 680;
+        nodes += `<circle cx="${c.x}" cy="${c.y}" r="5" fill="#fff" stroke="#94a3b8" stroke-width="1.6"/>
+              <text x="${flip ? c.x - 10 : c.x + 10}" y="${c.y + 3.5}" text-anchor="${flip ? "end" : "start"}"
+                    font-family="Inter, sans-serif" font-size="10.5" font-weight="500" fill="#475569"
+                    stroke="#eef2f7" stroke-width="3" paint-order="stroke" stroke-linejoin="round">${esc(c.name)}</text>`;
+      });
+
+      let checkpoints = "";
+      activeSightings.forEach((s, idx) => {
+        const c = CAMS[s.cam];
+        const on = idx === activeIdx;
+        const col = s.alert ? "#e5484d" : "#2563eb";
+        checkpoints += `
+      ${on ? `<circle cx="${c.x}" cy="${c.y}" r="17" fill="${col}" fill-opacity=".12" stroke="${col}" stroke-width="1.5" stroke-dasharray="3 3"/>` : ""}
+      <circle cx="${c.x}" cy="${c.y}" r="${on ? 11 : 9.5}" fill="${col}" stroke="#fff" stroke-width="2"/>
+      <text x="${c.x}" y="${c.y + 3.6}" font-family="Inter, sans-serif" font-size="10.5" font-weight="700" fill="#fff" text-anchor="middle">${idx + 1}</text>
+    `;
+      });
+
+      document.getElementById("mapWrap").innerHTML = `
+    <svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+      ${MAP_BG}
+      ${lines}
+      ${nodes}
+      ${checkpoints}
+    </svg>
+  `;
+    }
+
+    // ---------- Timeline ----------
     function renderTimeline(sightings) {
       const list = document.getElementById("timelineList");
       list.innerHTML = "";
@@ -1127,7 +1516,7 @@
       const activeSightings = sightings.filter(s => CAMS[s.cam]);
 
       if (!activeSightings.length) {
-        list.innerHTML = `<div class="empty">No sightings logged across active city nodes.</div>`;
+        list.innerHTML = `<div class="empty">No sightings found for this plate.</div>`;
         return;
       }
 
@@ -1135,45 +1524,43 @@
         const row = document.createElement("div");
         row.className = "tl-ev" + (s.alert ? " flagged" : "");
         row.innerHTML = `
-          <div class="tl-time">${s.t} · Leg ${idx + 1}</div>
-          <div class="tl-loc">${esc(CAMS[s.cam].name)}</div>
-          <div class="tl-meta">${s.dir || "En route"} · ${s.speed || 42} km/h · Conf ${(s.conf * 100).toFixed(1)}%</div>
-        `;
+      <div class="tl-time">${s.t} · Leg ${idx + 1}</div>
+      <div class="tl-loc">${esc(CAMS[s.cam]?.name || s.cam)}</div>
+      <div class="tl-meta">${s.dir || 'Unknown'} · Conf ${(s.conf * 100).toFixed(1)}%</div>
+      <div class="tl-thumb">${s.img ? `<img src="${esc(s.img)}" alt="Vehicle at ${esc(CAMS[s.cam]?.name || s.cam)}">` : CAR_SVG}</div>
+    `;
         row.addEventListener("click", () => {
           document.querySelectorAll(".tl-ev").forEach(r => r.classList.remove("active"));
           row.classList.add("active");
-          renderGisMap(activeSightings, idx);
+          renderMap(activeSightings, idx);
         });
         list.appendChild(row);
       });
     }
 
-    // ---------- Real Trajectory Backend Fetch (with Fallback) ----------
+    // ---------- Trace a Plate (API) ----------
     async function runTrace(plate) {
       activeCurrentPlate = plate;
       document.getElementById("traceTitle").innerHTML = `<span class="plate lg">${esc(plate) || "—"}</span>`;
 
-      let sightings = [];
+      // Try real API first
+      const data = await apiFetch(`/api/trajectory/${encodeURIComponent(plate)}`);
 
-      // 1. Try real backend API
-      try {
-        const res = await fetch(`${API_BASE}/trajectory/${encodeURIComponent(plate)}`);
-        if (res.ok) {
-          const data = await res.json();
-          sightings = data.sightings || [];
-          setBackendStatus(true);
-        } else {
-          throw new Error("Backend returned status " + res.status);
-        }
-      } catch (err) {
-        // 2. Fallback to offline mock dictionary
-        sightings = MOCK_TRACES[plate] || [];
+      let sightings = [];
+      if (data && data.points && data.points.length > 0) {
+        // Convert API response to sighting format
+        sightings = data.points.map(p => ({
+          cam: p.camera_id,
+          t: new Date(p.timestamp).toLocaleTimeString('en-US', { hour12: false }),
+          dir: p.vehicle_type || 'Vehicle',
+          conf: p.confidence,
+          alert: false,
+        }));
       }
 
-      const activeSightings = sightings.filter(s => CAMS[s.cam]);
-      document.getElementById("traceCount").textContent = `${activeSightings.length} ${activeSightings.length === 1 ? "sighting" : "sightings"}`;
-      renderGisMap(activeSightings, -1);
-      renderTimeline(activeSightings);
+      document.getElementById("traceCount").textContent = `${sightings.length} ${sightings.length === 1 ? "sighting" : "sightings"}`;
+      renderMap(sightings, -1);
+      renderTimeline(sightings);
     }
 
     const plateInput = document.getElementById("plateInput");
@@ -1182,122 +1569,115 @@
     document.getElementById("traceBtn").addEventListener("click", () => runTrace(normalisePlate(plateInput.value)));
     plateInput.addEventListener("keydown", e => { if (e.key === "Enter") document.getElementById("traceBtn").click(); });
     document.getElementById("clearBtn").addEventListener("click", () => {
-      plateInput.value = "PB10 EK 4521";
-      runTrace("PB10 EK 4521");
+      plateInput.value = "";
+      activeCurrentPlate = "";
+      document.getElementById("traceTitle").innerHTML = `<span class="plate lg">—</span>`;
+      document.getElementById("traceCount").textContent = "0 sightings";
+      document.getElementById("timelineList").innerHTML = `<div class="empty">Enter a plate number above to trace its route.</div>`;
+      renderMap([], -1);
     });
     document.querySelectorAll(".chips span").forEach(c => c.addEventListener("click", () => {
       plateInput.value = c.dataset.q;
       runTrace(c.dataset.q);
     }));
 
-    // ---------- Live Ingestion Pipeline & WebSockets ----------
-    const MODELS = ["Toyota Camry", "VW Golf", "BMW 3 Series", "Maruti Swift", "Hyundai Creta", "Mahindra Thar", "Tata Nexon", "Honda City"];
-    let detections = 14892;
-    let flaggedCount = 18;
+    // ---------- Load cameras from API ----------
+    async function loadCameras() {
+      const cameras = await apiFetch('/api/cameras');
+      if (cameras && cameras.length > 0) {
+        CAMS = {};
+        // Distribute cameras across the SVG map (800x400 viewport)
+        const margin = 60;
+        const usableW = 800 - 2 * margin;
+        const usableH = 400 - 2 * margin;
+        cameras.forEach((cam, idx) => {
+          // Spread cameras evenly across the map
+          const angle = (idx / cameras.length) * Math.PI * 1.5 + 0.3;
+          const radiusX = usableW * 0.4;
+          const radiusY = usableH * 0.35;
+          const x = Math.round(400 + radiusX * Math.cos(angle));
+          const y = Math.round(200 + radiusY * Math.sin(angle));
 
-    function handleIncomingDetection(payload) {
-      const now = payload.timestamp || new Date().toTimeString().split(" ")[0];
-      const plate = payload.plate || "PB10 XX 0000";
-      const camId = payload.cam_id || "LDH-05";
-      const camName = CAMS[camId] ? CAMS[camId].name : payload.road || "City Corridor";
-      const conf = payload.confidence ? (payload.confidence * 100).toFixed(1) : (94 + Math.random() * 5).toFixed(1);
-      const model = payload.model || MODELS[Math.floor(Math.random() * MODELS.length)];
-      const flagged = payload.flagged || Math.random() < 0.15;
-
-      // 1. Append to Live Capture table (keeps max 20)
-      const liveRow = document.createElement("tr");
-      liveRow.innerHTML = `<td class="t">${now}</td><td><span class="plate">${plate}</span></td><td>${esc(camId)}</td><td>${esc(camName)}</td><td class="conf">${conf}%</td>`;
-      const liveBody = document.getElementById("logBody");
-      liveBody.insertBefore(liveRow, liveBody.firstChild);
-      if (liveBody.children.length > 20) liveBody.removeChild(liveBody.lastChild);
-
-      // 2. Append to Recent Vehicle Detections (keeps max 5)
-      const recentRow = document.createElement("tr");
-      recentRow.innerHTML = `<td class="t">${now}</td><td><span class="plate">${plate}</span></td><td>${model}</td><td>${esc(camName)}</td><td>${esc(camId)}</td><td><span class="pill ${flagged ? "flag" : "ok"}">${flagged ? "Flagged" : "Clear"}</span></td>`;
-      const recentBody = document.getElementById("recentBody");
-      recentBody.insertBefore(recentRow, recentBody.firstChild);
-      if (recentBody.children.length > 5) recentBody.removeChild(recentBody.lastChild);
-
-      // 3. Update KPI Counters
-      detections += 1;
-      document.getElementById("sDetections").textContent = detections.toLocaleString("en-US");
-      if (flagged) {
-        flaggedCount++;
-        document.getElementById("sFlagged").textContent = flaggedCount;
-      }
-    }
-
-    // Connect WebSocket for real-time perception streaming
-    function connectLiveStreamWebSocket() {
-      let socket;
-      try {
-        socket = new WebSocket(WS_LIVE_URL);
-        socket.onopen = () => {
-          setBackendStatus(true);
-        };
-        socket.onmessage = (event) => {
-          try {
-            const data = JSON.parse(event.data);
-            handleIncomingDetection(data);
-          } catch (e) { console.error("Bad WS message:", e); }
-        };
-        socket.onerror = () => {
-          // Graceful fallback: Run simulated stream if backend WebSocket is not up
-          setBackendStatus(false);
-        };
-        socket.onclose = () => {
-          setTimeout(connectLiveStreamWebSocket, 4000);
-        };
-      } catch (e) {
-        setBackendStatus(false);
-      }
-    }
-
-    // Simulation Fallback generator (active only if backend WebSocket is offline)
-    const series = ["PB10", "HR26", "DL3C", "PB65"];
-    setInterval(() => {
-      if (!backendReachable) {
-        const camList = Object.values(CAMS);
-        if (camList.length === 0) return;
-        const rnd = arr => arr[Math.floor(Math.random() * arr.length)];
-        const letter = () => String.fromCharCode(65 + Math.floor(Math.random() * 26));
-        const plate = `${rnd(series)} ${letter()}${letter()} ${Math.floor(1000 + Math.random() * 9000)}`;
-        const cam = rnd(camList);
-        handleIncomingDetection({
-          plate: plate,
-          cam_id: cam.id,
-          road: cam.name,
-          confidence: 0.95
+          CAMS[cam.camera_id] = {
+            id: cam.camera_id,
+            name: cam.name || cam.camera_id,
+            x: Math.max(margin, Math.min(800 - margin, x)),
+            y: Math.max(margin, Math.min(400 - margin, y)),
+          };
         });
       }
-    }, 1500);
+      renderNodeChips();
+    }
 
-    // ---------- Alerts Pipeline (REST + WS) ----------
-    function updateAlertCounters() {
-      const count = ALERTS_DATA.length;
+    // ---------- Load dashboard stats from API ----------
+    async function loadDashboardStats() {
+      const stats = await apiFetch('/api/dashboard/stats');
+      if (stats) {
+        document.getElementById("topCamCount").textContent = stats.active_cameras || 0;
+        document.getElementById("railNodeCount").textContent = `${stats.active_cameras || 0} Active`;
+        document.getElementById("sDetections").textContent = (stats.total_detections || 0).toLocaleString("en-US");
+        document.getElementById("sFlagged").textContent = stats.flagged_count || 0;
+        document.getElementById("topAlertCount").textContent = stats.open_alerts || 0;
+      }
+    }
+
+    // ---------- Load recent events from API ----------
+    async function loadRecentEvents() {
+      const events = await apiFetch('/api/events?limit=20');
+      if (!events || events.length === 0) return;
+
+      // Live Capture table
+      const liveBody = document.getElementById("logBody");
+      liveBody.innerHTML = "";
+      events.forEach(ev => {
+        const row = document.createElement("tr");
+        const time = new Date(ev.timestamp).toLocaleTimeString('en-US', { hour12: false });
+        const conf = (ev.confidence * 100).toFixed(1);
+        row.innerHTML = `<td class="t">${time}</td><td><span class="plate">${esc(ev.plate_number)}</span></td><td>${esc(ev.camera_id)}</td><td>${esc(ev.camera_name || ev.road || '')}</td><td class="conf">${conf}%</td>`;
+        liveBody.appendChild(row);
+      });
+
+      // Recent Vehicle Detections table (top 5)
+      const recentBody = document.getElementById("recentBody");
+      recentBody.innerHTML = "";
+      events.slice(0, 5).forEach(ev => {
+        const row = document.createElement("tr");
+        const time = new Date(ev.timestamp).toLocaleTimeString('en-US', { hour12: false });
+        row.innerHTML = `<td class="t">${time}</td><td><span class="plate">${esc(ev.plate_number)}</span></td><td>${esc(ev.vehicle_type || 'Vehicle')}</td><td>${esc(ev.camera_name || '')}</td><td>${esc(ev.camera_id)}</td><td><span class="pill ok">Clear</span></td>`;
+        recentBody.appendChild(row);
+      });
+    }
+
+    // ---------- Load alerts from API ----------
+    async function loadAlerts() {
+      const alerts = await apiFetch('/api/alerts?limit=50');
+      if (!alerts) return;
+
+      const count = alerts.length;
       ["navBadge", "topAlertCount", "bellBadge"].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.textContent = count;
       });
       document.getElementById("alertSubCount").textContent = `${count} Unresolved`;
-    }
 
-    function renderAlertCards() {
-      updateAlertCounters();
-      const queue = document.getElementById("alertQueue");
-      queue.innerHTML = ALERTS_DATA.map(a => `
-        <div class="alert-card ${a.sev}" data-plate="${a.plate}" title="Click to trace route">
-          <div class="spine"></div>
-          <div>
-            <h3>${esc(a.title)}</h3>
-            <p>${esc(a.body)}</p>
-            <div class="reason">${esc(a.why)}</div>
-          </div>
-          <div><span class="plate warn">${esc(a.plate)}</span></div>
-        </div>
-      `).join("");
+      if (count === 0) {
+        document.getElementById("alertQueue").innerHTML = `<div class="empty">No alerts. The system is operating normally.</div>`;
+        return;
+      }
 
-      queue.querySelectorAll(".alert-card").forEach(card => {
+      document.getElementById("alertQueue").innerHTML = alerts.map(a => `
+  <div class="alert-card ${a.alert_type === 'blacklist' ? 'hi' : 'lo'}" data-plate="${esc(a.plate_number)}" title="Click to trace route">
+    <div class="spine"></div>
+    <div>
+      <h3>${esc(a.alert_type || 'Alert')}: ${esc(a.plate_number)}</h3>
+      <p>${esc(a.message || 'No details')}</p>
+      <div class="reason">${esc(a.camera_id || 'Unknown camera')} · ${new Date(a.timestamp).toLocaleString()}</div>
+    </div>
+    <div><span class="plate warn">${esc(a.plate_number)}</span></div>
+  </div>
+`).join("");
+
+      document.querySelectorAll(".alert-card").forEach(card => {
         card.addEventListener("click", () => {
           const plate = card.dataset.plate;
           document.querySelector('.nav-btn[data-v="track"]').click();
@@ -1307,49 +1687,68 @@
       });
     }
 
-    async function loadAlertsFromApi() {
-      try {
-        const res = await fetch(`${API_BASE}/alerts`);
-        if (res.ok) {
-          ALERTS_DATA = await res.json();
-          renderAlertCards();
-          setBackendStatus(true);
-        }
-      } catch (e) {
-        renderAlertCards(); // Use default initial alerts
-      }
+    // ---------- Load congestion data from API ----------
+    async function loadCongestion() {
+      const data = await apiFetch('/api/analytics/congestion?hours=1');
+      if (!data || data.length === 0) return;
+
+      // Update City Flow congestion table
+      const tbody = document.querySelector('#view-flow .tbl tbody');
+      if (!tbody) return;
+
+      tbody.innerHTML = data.map(r => {
+        let pillClass = 'ok', pillText = 'Free flow';
+        if (r.congestion_level === 'severe') { pillClass = 'flag'; pillText = 'Bottleneck'; }
+        else if (r.congestion_level === 'high') { pillClass = 'flag'; pillText = 'Heavy'; }
+        else if (r.congestion_level === 'moderate') { pillClass = 'warn'; pillText = 'Moderate'; }
+
+        return `<tr>
+          <td>${esc(r.camera_name)} (${esc(r.camera_id)})</td>
+          <td>${r.vehicle_count} vehicles/hr</td>
+          <td><span class="pill ${pillClass}">${pillText}</span></td>
+        </tr>`;
+      }).join("");
     }
 
-    // Connect WebSocket for Security Watchlist Alerts
-    function connectAlertsWebSocket() {
+    // ---------- WebSocket for real-time alerts ----------
+    function connectAlertWebSocket() {
       try {
-        const alertWs = new WebSocket(WS_ALERTS_URL);
-        alertWs.onmessage = (event) => {
-          const newAlert = JSON.parse(event.data);
-          ALERTS_DATA.unshift(newAlert);
-          renderAlertCards();
+        const ws = new WebSocket(`${WS_BASE}/ws/alerts`);
+
+        ws.onmessage = (event) => {
+          try {
+            const alert = JSON.parse(event.data);
+            if (alert.type === 'pong') return;
+
+            // Refresh alerts view
+            loadAlerts();
+
+            // Update badge counts
+            const badge = document.getElementById("bellBadge");
+            if (badge) badge.textContent = parseInt(badge.textContent || 0) + 1;
+          } catch (e) {
+            console.warn('WebSocket parse error:', e);
+          }
         };
-        alertWs.onclose = () => setTimeout(connectAlertsWebSocket, 5000);
-      } catch (e) {}
-    }
 
-    // ---------- Status Pill & Backend Check ----------
-    function setBackendStatus(isOnline) {
-      backendReachable = isOnline;
-      const pill = document.getElementById("livePill");
-      const pillText = document.getElementById("livePillText");
-      const connStat = document.getElementById("railConnStatus");
+        ws.onclose = () => {
+          // Reconnect after 5 seconds
+          setTimeout(connectAlertWebSocket, 5000);
+        };
 
-      if (isOnline) {
-        pill.classList.remove("offline");
-        pillText.textContent = "Online (Live API)";
-        connStat.textContent = "Live API";
-        connStat.style.color = "var(--green)";
-      } else {
-        pill.classList.add("offline");
-        pillText.textContent = "Standby (Simulated)";
-        connStat.textContent = "Standby";
-        connStat.style.color = "var(--amber)";
+        ws.onerror = () => {
+          ws.close();
+        };
+
+        // Keepalive ping every 30 seconds
+        setInterval(() => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send("ping");
+          }
+        }, 30000);
+      } catch (e) {
+        console.warn('WebSocket connection failed:', e);
+        setTimeout(connectAlertWebSocket, 5000);
       }
     }
 
@@ -1363,14 +1762,36 @@
     tickClock();
     setInterval(tickClock, 1000);
 
-    // ---------- Boot Initializer ----------
-    initLeafletMap();
-    renderNodeChips();
-    loadAlertsFromApi();
-    connectLiveStreamWebSocket();
-    connectAlertsWebSocket();
-    runTrace("PB10 EK 4521");
+    // ---------- Init ----------
+    async function init() {
+      // Load cameras from backend
+      await loadCameras();
+
+      // Load initial dashboard data
+      await Promise.all([
+        loadDashboardStats(),
+        loadRecentEvents(),
+        loadAlerts(),
+        loadCongestion(),
+      ]);
+
+      // Render empty map (user needs to search a plate)
+      renderMap([], -1);
+      document.getElementById("timelineList").innerHTML = `<div class="empty">Enter a plate number above to trace its route.</div>`;
+
+      // Start WebSocket for real-time alerts
+      connectAlertWebSocket();
+
+      // Poll for fresh data every 10 seconds
+      setInterval(loadDashboardStats, 10000);
+      setInterval(loadRecentEvents, 5000);
+      setInterval(loadAlerts, 30000);
+    }
+
+    init();
   </script>
 
+
 </body>
+
 </html>
