@@ -34,16 +34,21 @@ class PlateEventResponse(BaseModel):
 
 
 class PlateEventCreate(BaseModel):
-    """Canonical event emitted by the perception pipeline."""
-    event_id: UUID
-    plate_number: str = Field(..., min_length=1, max_length=20)
-    confidence: float = Field(..., ge=0.0, le=1.0)
-    camera_id: str = Field(..., min_length=1, max_length=50)
-    timestamp: datetime
+    """Schema for events arriving from the perception layer via Redis."""
+    event_id: str
+    plate_number: str
+    confidence: float
+    camera_id: str
+    timestamp: str
     vehicle_type: Optional[str] = None
     direction: Optional[str] = None
     track_id: Optional[str] = None
+    location: Optional[str] = None
     snapshot_path: Optional[str] = None
+    sequence_index: Optional[int] = None
+    entry_frame: Optional[int] = None
+    exit_frame: Optional[int] = None
+
 
 
 # ─── Trajectory ───

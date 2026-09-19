@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -1316,11 +1316,25 @@
   </div>
 
   <script>
+    // ---------- API Configuration ----------
+    const API_BASE = window.location.origin;
+    const WS_BASE = API_BASE.replace('http', 'ws');
+
     // ---------- Helpers ----------
     const esc = s => String(s).replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
 
+    async function apiFetch(path) {
+      try {
+        const res = await fetch(`${API_BASE}${path}`);
+        if (!res.ok) return null;
+        return await res.json();
+      } catch (e) {
+        console.warn(`API fetch failed: ${path}`, e);
+        return null;
+      }
+    }
+
     // Placeholder car image for the timeline.
-    // To use real photos, add an `img: "path/to/photo.jpg"` field to a sighting in TRACES below.
     const CAR_SVG = `<svg viewBox="0 0 120 50" fill="none" aria-hidden="true">
   <path d="M8 36v-8q0-4 5-5l16-3 12-11q2-2 5-2h30q3 0 5 2l11 11 14 3q6 1 6 6v7z" fill="#b9c5d6"/>
   <path d="M44 20l9-9h12v9zM69 20v-9h9l9 9z" fill="#e6ecf4"/>
@@ -1328,7 +1342,7 @@
   <circle cx="88" cy="37" r="7" fill="#475569"/><circle cx="88" cy="37" r="3" fill="#cbd5e1"/>
 </svg>`;
 
-    // Decorative map backdrop (swap for real map tiles later if you like)
+    // Decorative map backdrop
     const MAP_BG = `
   <rect width="800" height="400" fill="#eef2f7"/>
   <ellipse cx="90" cy="62" rx="62" ry="30" fill="#e0eee3"/>
@@ -1347,45 +1361,9 @@
   </g>
   <text x="415" y="146" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-weight="600" letter-spacing="3" fill="#b6bfca">CITY CENTRE</text>`;
 
-    // ---------- Data ----------
-    // Dynamic Camera GIS Nodes Repository
-    let CAMS = {
-      "LDH-14": { id: "LDH-14", name: "Jalandhar Bypass (W)", x: 120, y: 140 },
-      "LDH-06": { id: "LDH-06", name: "Jagraon Bridge", x: 260, y: 190 },
-      "LDH-05": { id: "LDH-05", name: "Clock Tower", x: 370, y: 240 },
-      "LDH-04": { id: "LDH-04", name: "Dholewal Chowk", x: 520, y: 260 },
-      "LDH-03": { id: "LDH-03", name: "Sherpur Chowk", x: 610, y: 200 },
-      "LDH-01": { id: "LDH-01", name: "Samrala Chowk", x: 690, y: 100 }
-    };
-
-    let activeCurrentPlate = "PB10 EK 4521";
-
-    const TRACES = {
-      "PB10 EK 4521": [
-        { cam: "LDH-14", t: "07:42:11", speed: 58, dir: "Eastbound", conf: 0.97 },
-        { cam: "LDH-06", t: "07:49:03", speed: 41, dir: "Eastbound", conf: 0.94 },
-        { cam: "LDH-05", t: "07:53:47", speed: 28, dir: "Eastbound", conf: 0.88 },
-        { cam: "LDH-04", t: "08:04:22", speed: 36, dir: "Northbound", conf: 0.96 },
-        { cam: "LDH-03", t: "08:11:09", speed: 52, dir: "Northbound", conf: 0.95 },
-        { cam: "LDH-01", t: "08:18:40", speed: 61, dir: "Northbound", conf: 0.98 }
-      ],
-      "PB10 CQ 8871": [
-        { cam: "LDH-05", t: "21:28:15", speed: 44, dir: "Eastbound", conf: 0.93 },
-        { cam: "LDH-04", t: "21:36:02", speed: 35, dir: "Eastbound", conf: 0.95 },
-        { cam: "LDH-03", t: "21:44:57", speed: 51, dir: "Eastbound", conf: 0.97, alert: true }
-      ],
-      "HR26 BT 9003": [
-        { cam: "LDH-05", t: "14:02:18", speed: 31, dir: "Southbound", conf: 0.96 },
-        { cam: "LDH-06", t: "14:16:30", speed: 33, dir: "Northbound", conf: 0.92 },
-        { cam: "LDH-05", t: "14:40:22", speed: 26, dir: "Southbound", conf: 0.97, alert: true }
-      ]
-    };
-
-    const ALERTS_DATA = [
-      { sev: "hi", plate: "PB10 CQ 8871", title: "Blacklisted Vehicle Sighted", body: "Vehicle flagged under FIR 0412/2026 (Stolen). Sighted at Sherpur Chowk.", why: "NCRB Registry Match · Auto-flagged" },
-      { sev: "hi", plate: "PB10 EK 4521", title: "Plate Duplication / Velocity Anomaly", body: "Two sightings 18km apart within 3 minutes. Physical speed exceeds 340 km/h.", why: "Spatial Distance Check · PostGIS Anomaly" },
-      { sev: "lo", plate: "PB65 TR 2204", title: "Restricted Corridor Violation", body: "Heavy goods vehicle entered Mall Road during peak hours (09:00 - 21:00).", why: "Zonal Restriction Rule" }
-    ];
+    // ---------- Data (loaded from API) ----------
+    let CAMS = {};
+    let activeCurrentPlate = "";
 
     // ---------- Navigation ----------
     document.getElementById("toggleNav").addEventListener("click", () => {
@@ -1406,7 +1384,6 @@
     });
 
     // ---------- Camera nodes ----------
-    // Keep camera counters in sync across KPI card & sidebar
     function updateCameraNodeCounts() {
       const total = Object.keys(CAMS).length;
       document.getElementById("topCamCount").textContent = total;
@@ -1447,7 +1424,7 @@
       CAMS[cleanId] = { id: cleanId, name: cleanName, x: posX, y: posY };
 
       renderNodeChips();
-      runTrace(activeCurrentPlate);
+      if (activeCurrentPlate) runTrace(activeCurrentPlate);
     }
 
     function removeCameraNode(id) {
@@ -1457,7 +1434,7 @@
       }
       delete CAMS[id];
       renderNodeChips();
-      runTrace(activeCurrentPlate);
+      if (activeCurrentPlate) runTrace(activeCurrentPlate);
     }
 
     document.getElementById("addCamBtn").addEventListener("click", () => {
@@ -1478,7 +1455,7 @@
       yInput.value = "";
     });
 
-    // Node manager starts hidden; the button toggles it
+    // Node manager toggle
     const toggleNodeMgrBtn = document.getElementById("toggleNodeMgrBtn");
     const nodeMgrSection = document.getElementById("nodeMgrSection");
     toggleNodeMgrBtn.addEventListener("click", () => {
@@ -1502,7 +1479,7 @@
 
       let nodes = "";
       Object.values(CAMS).forEach(c => {
-        const flip = c.x > 680; // keep labels inside the map on the right edge
+        const flip = c.x > 680;
         nodes += `<circle cx="${c.x}" cy="${c.y}" r="5" fill="#fff" stroke="#94a3b8" stroke-width="1.6"/>
               <text x="${flip ? c.x - 10 : c.x + 10}" y="${c.y + 3.5}" text-anchor="${flip ? "end" : "start"}"
                     font-family="Inter, sans-serif" font-size="10.5" font-weight="500" fill="#475569"
@@ -1536,7 +1513,6 @@
       const list = document.getElementById("timelineList");
       list.innerHTML = "";
 
-      // Drop orphaned sightings if a camera node was removed
       const activeSightings = sightings.filter(s => CAMS[s.cam]);
 
       if (!activeSightings.length) {
@@ -1549,9 +1525,9 @@
         row.className = "tl-ev" + (s.alert ? " flagged" : "");
         row.innerHTML = `
       <div class="tl-time">${s.t} · Leg ${idx + 1}</div>
-      <div class="tl-loc">${esc(CAMS[s.cam].name)}</div>
-      <div class="tl-meta">${s.dir} · ${s.speed} km/h · Conf ${(s.conf * 100).toFixed(1)}%</div>
-      <div class="tl-thumb">${s.img ? `<img src="${esc(s.img)}" alt="Vehicle at ${esc(CAMS[s.cam].name)}">` : CAR_SVG}</div>
+      <div class="tl-loc">${esc(CAMS[s.cam]?.name || s.cam)}</div>
+      <div class="tl-meta">${s.dir || 'Unknown'} · Conf ${(s.conf * 100).toFixed(1)}%</div>
+      <div class="tl-thumb">${s.img ? `<img src="${esc(s.img)}" alt="Vehicle at ${esc(CAMS[s.cam]?.name || s.cam)}">` : CAR_SVG}</div>
     `;
         row.addEventListener("click", () => {
           document.querySelectorAll(".tl-ev").forEach(r => r.classList.remove("active"));
@@ -1562,12 +1538,26 @@
       });
     }
 
-    function runTrace(plate) {
+    // ---------- Trace a Plate (API) ----------
+    async function runTrace(plate) {
       activeCurrentPlate = plate;
-      const rawSightings = TRACES[plate] || [];
-      const sightings = rawSightings.filter(s => CAMS[s.cam]);
-
       document.getElementById("traceTitle").innerHTML = `<span class="plate lg">${esc(plate) || "—"}</span>`;
+
+      // Try real API first
+      const data = await apiFetch(`/api/trajectory/${encodeURIComponent(plate)}`);
+
+      let sightings = [];
+      if (data && data.points && data.points.length > 0) {
+        // Convert API response to sighting format
+        sightings = data.points.map(p => ({
+          cam: p.camera_id,
+          t: new Date(p.timestamp).toLocaleTimeString('en-US', { hour12: false }),
+          dir: p.vehicle_type || 'Vehicle',
+          conf: p.confidence,
+          alert: false,
+        }));
+      }
+
       document.getElementById("traceCount").textContent = `${sightings.length} ${sightings.length === 1 ? "sighting" : "sightings"}`;
       renderMap(sightings, -1);
       renderTimeline(sightings);
@@ -1579,86 +1569,190 @@
     document.getElementById("traceBtn").addEventListener("click", () => runTrace(normalisePlate(plateInput.value)));
     plateInput.addEventListener("keydown", e => { if (e.key === "Enter") document.getElementById("traceBtn").click(); });
     document.getElementById("clearBtn").addEventListener("click", () => {
-      plateInput.value = "PB10 EK 4521";
-      runTrace("PB10 EK 4521");
+      plateInput.value = "";
+      activeCurrentPlate = "";
+      document.getElementById("traceTitle").innerHTML = `<span class="plate lg">—</span>`;
+      document.getElementById("traceCount").textContent = "0 sightings";
+      document.getElementById("timelineList").innerHTML = `<div class="empty">Enter a plate number above to trace its route.</div>`;
+      renderMap([], -1);
     });
     document.querySelectorAll(".chips span").forEach(c => c.addEventListener("click", () => {
       plateInput.value = c.dataset.q;
       runTrace(c.dataset.q);
     }));
 
-    // ---------- Ingest stream simulator ----------
-    const series = ["PB10", "HR26", "DL3C", "PB65"];
-    const MODELS = ["Toyota Camry", "VW Golf", "BMW 3 Series", "Maruti Swift", "Hyundai Creta", "Mahindra Thar", "Tata Nexon", "Honda City"];
-    let detections = 14892;
-    let flaggedCount = 18;
+    // ---------- Load cameras from API ----------
+    async function loadCameras() {
+      const cameras = await apiFetch('/api/cameras');
+      if (cameras && cameras.length > 0) {
+        CAMS = {};
+        // Distribute cameras across the SVG map (800x400 viewport)
+        const margin = 60;
+        const usableW = 800 - 2 * margin;
+        const usableH = 400 - 2 * margin;
+        cameras.forEach((cam, idx) => {
+          // Spread cameras evenly across the map
+          const angle = (idx / cameras.length) * Math.PI * 1.5 + 0.3;
+          const radiusX = usableW * 0.4;
+          const radiusY = usableH * 0.35;
+          const x = Math.round(400 + radiusX * Math.cos(angle));
+          const y = Math.round(200 + radiusY * Math.sin(angle));
 
-    function pushStreamRow() {
-      const camList = Object.values(CAMS);
-      if (camList.length === 0) return;
+          CAMS[cam.camera_id] = {
+            id: cam.camera_id,
+            name: cam.name || cam.camera_id,
+            x: Math.max(margin, Math.min(800 - margin, x)),
+            y: Math.max(margin, Math.min(400 - margin, y)),
+          };
+        });
+      }
+      renderNodeChips();
+    }
 
-      const rnd = arr => arr[Math.floor(Math.random() * arr.length)];
-      const letter = () => String.fromCharCode(65 + Math.floor(Math.random() * 26));
-      const plate = `${rnd(series)} ${letter()}${letter()} ${Math.floor(1000 + Math.random() * 9000)}`;
-      const cam = rnd(camList);
-      const now = new Date().toTimeString().split(" ")[0];
-      const model = rnd(MODELS);
-      const flagged = Math.random() < 0.15;
-      const conf = (92 + Math.random() * 7.5).toFixed(1);
-
-      // Live Capture table (keeps last 20)
-      const liveRow = document.createElement("tr");
-      liveRow.innerHTML = `<td class="t">${now}</td><td><span class="plate">${plate}</span></td><td>${esc(cam.id)}</td><td>${esc(cam.name)}</td><td class="conf">${conf}%</td>`;
-      const liveBody = document.getElementById("logBody");
-      liveBody.insertBefore(liveRow, liveBody.firstChild);
-      if (liveBody.children.length > 20) liveBody.removeChild(liveBody.lastChild);
-
-      // Recent Vehicle Detections table (keeps last 5)
-      const recentRow = document.createElement("tr");
-      recentRow.innerHTML = `<td class="t">${now}</td><td><span class="plate">${plate}</span></td><td>${model}</td><td>${esc(cam.name)}</td><td>${esc(cam.id)}</td><td><span class="pill ${flagged ? "flag" : "ok"}">${flagged ? "Flagged" : "Clear"}</span></td>`;
-      const recentBody = document.getElementById("recentBody");
-      recentBody.insertBefore(recentRow, recentBody.firstChild);
-      if (recentBody.children.length > 5) recentBody.removeChild(recentBody.lastChild);
-
-      // KPI counters
-      detections += 3 + Math.floor(Math.random() * 4);
-      document.getElementById("sDetections").textContent = detections.toLocaleString("en-US");
-      if (flagged) {
-        flaggedCount++;
-        document.getElementById("sFlagged").textContent = flaggedCount;
+    // ---------- Load dashboard stats from API ----------
+    async function loadDashboardStats() {
+      const stats = await apiFetch('/api/dashboard/stats');
+      if (stats) {
+        document.getElementById("topCamCount").textContent = stats.active_cameras || 0;
+        document.getElementById("railNodeCount").textContent = `${stats.active_cameras || 0} Active`;
+        document.getElementById("sDetections").textContent = (stats.total_detections || 0).toLocaleString("en-US");
+        document.getElementById("sFlagged").textContent = stats.flagged_count || 0;
+        document.getElementById("topAlertCount").textContent = stats.open_alerts || 0;
       }
     }
 
-    // ---------- Alerts ----------
-    const currentAlertCount = ALERTS_DATA.length;
-    ["navBadge", "topAlertCount", "bellBadge"].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = currentAlertCount;
-    });
-    document.getElementById("alertSubCount").textContent = `${currentAlertCount} Unresolved`;
+    // ---------- Load recent events from API ----------
+    async function loadRecentEvents() {
+      const events = await apiFetch('/api/events?limit=20');
+      if (!events || events.length === 0) return;
 
-    document.getElementById("alertQueue").innerHTML = ALERTS_DATA.map(a => `
-  <div class="alert-card ${a.sev}" data-plate="${a.plate}" title="Click to trace route">
+      // Live Capture table
+      const liveBody = document.getElementById("logBody");
+      liveBody.innerHTML = "";
+      events.forEach(ev => {
+        const row = document.createElement("tr");
+        const time = new Date(ev.timestamp).toLocaleTimeString('en-US', { hour12: false });
+        const conf = (ev.confidence * 100).toFixed(1);
+        row.innerHTML = `<td class="t">${time}</td><td><span class="plate">${esc(ev.plate_number)}</span></td><td>${esc(ev.camera_id)}</td><td>${esc(ev.camera_name || ev.road || '')}</td><td class="conf">${conf}%</td>`;
+        liveBody.appendChild(row);
+      });
+
+      // Recent Vehicle Detections table (top 5)
+      const recentBody = document.getElementById("recentBody");
+      recentBody.innerHTML = "";
+      events.slice(0, 5).forEach(ev => {
+        const row = document.createElement("tr");
+        const time = new Date(ev.timestamp).toLocaleTimeString('en-US', { hour12: false });
+        row.innerHTML = `<td class="t">${time}</td><td><span class="plate">${esc(ev.plate_number)}</span></td><td>${esc(ev.vehicle_type || 'Vehicle')}</td><td>${esc(ev.camera_name || '')}</td><td>${esc(ev.camera_id)}</td><td><span class="pill ok">Clear</span></td>`;
+        recentBody.appendChild(row);
+      });
+    }
+
+    // ---------- Load alerts from API ----------
+    async function loadAlerts() {
+      const alerts = await apiFetch('/api/alerts?limit=50');
+      if (!alerts) return;
+
+      const count = alerts.length;
+      ["navBadge", "topAlertCount", "bellBadge"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = count;
+      });
+      document.getElementById("alertSubCount").textContent = `${count} Unresolved`;
+
+      if (count === 0) {
+        document.getElementById("alertQueue").innerHTML = `<div class="empty">No alerts. The system is operating normally.</div>`;
+        return;
+      }
+
+      document.getElementById("alertQueue").innerHTML = alerts.map(a => `
+  <div class="alert-card ${a.alert_type === 'blacklist' ? 'hi' : 'lo'}" data-plate="${esc(a.plate_number)}" title="Click to trace route">
     <div class="spine"></div>
     <div>
-      <h3>${a.title}</h3>
-      <p>${a.body}</p>
-      <div class="reason">${a.why}</div>
+      <h3>${esc(a.alert_type || 'Alert')}: ${esc(a.plate_number)}</h3>
+      <p>${esc(a.message || 'No details')}</p>
+      <div class="reason">${esc(a.camera_id || 'Unknown camera')} · ${new Date(a.timestamp).toLocaleString()}</div>
     </div>
-    <div><span class="plate warn">${a.plate}</span></div>
+    <div><span class="plate warn">${esc(a.plate_number)}</span></div>
   </div>
 `).join("");
 
-    document.querySelectorAll(".alert-card").forEach(card => {
-      card.addEventListener("click", () => {
-        const plate = card.dataset.plate;
-        document.querySelector('.nav-btn[data-v="track"]').click();
-        plateInput.value = plate;
-        runTrace(plate);
+      document.querySelectorAll(".alert-card").forEach(card => {
+        card.addEventListener("click", () => {
+          const plate = card.dataset.plate;
+          document.querySelector('.nav-btn[data-v="track"]').click();
+          plateInput.value = plate;
+          runTrace(plate);
+        });
       });
-    });
+    }
 
-    // ---------- Clock & ingestion loop ----------
+    // ---------- Load congestion data from API ----------
+    async function loadCongestion() {
+      const data = await apiFetch('/api/analytics/congestion?hours=1');
+      if (!data || data.length === 0) return;
+
+      // Update City Flow congestion table
+      const tbody = document.querySelector('#view-flow .tbl tbody');
+      if (!tbody) return;
+
+      tbody.innerHTML = data.map(r => {
+        let pillClass = 'ok', pillText = 'Free flow';
+        if (r.congestion_level === 'severe') { pillClass = 'flag'; pillText = 'Bottleneck'; }
+        else if (r.congestion_level === 'high') { pillClass = 'flag'; pillText = 'Heavy'; }
+        else if (r.congestion_level === 'moderate') { pillClass = 'warn'; pillText = 'Moderate'; }
+
+        return `<tr>
+          <td>${esc(r.camera_name)} (${esc(r.camera_id)})</td>
+          <td>${r.vehicle_count} vehicles/hr</td>
+          <td><span class="pill ${pillClass}">${pillText}</span></td>
+        </tr>`;
+      }).join("");
+    }
+
+    // ---------- WebSocket for real-time alerts ----------
+    function connectAlertWebSocket() {
+      try {
+        const ws = new WebSocket(`${WS_BASE}/ws/alerts`);
+
+        ws.onmessage = (event) => {
+          try {
+            const alert = JSON.parse(event.data);
+            if (alert.type === 'pong') return;
+
+            // Refresh alerts view
+            loadAlerts();
+
+            // Update badge counts
+            const badge = document.getElementById("bellBadge");
+            if (badge) badge.textContent = parseInt(badge.textContent || 0) + 1;
+          } catch (e) {
+            console.warn('WebSocket parse error:', e);
+          }
+        };
+
+        ws.onclose = () => {
+          // Reconnect after 5 seconds
+          setTimeout(connectAlertWebSocket, 5000);
+        };
+
+        ws.onerror = () => {
+          ws.close();
+        };
+
+        // Keepalive ping every 30 seconds
+        setInterval(() => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send("ping");
+          }
+        }, 30000);
+      } catch (e) {
+        console.warn('WebSocket connection failed:', e);
+        setTimeout(connectAlertWebSocket, 5000);
+      }
+    }
+
+    // ---------- Clock ----------
     function tickClock() {
       const d = new Date();
       const date = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
@@ -1667,13 +1761,36 @@
     }
     tickClock();
     setInterval(tickClock, 1000);
-    setInterval(pushStreamRow, 1400);
 
     // ---------- Init ----------
-    renderNodeChips();
-    runTrace("PB10 EK 4521");
-    for (let i = 0; i < 8; i++) pushStreamRow();
+    async function init() {
+      // Load cameras from backend
+      await loadCameras();
+
+      // Load initial dashboard data
+      await Promise.all([
+        loadDashboardStats(),
+        loadRecentEvents(),
+        loadAlerts(),
+        loadCongestion(),
+      ]);
+
+      // Render empty map (user needs to search a plate)
+      renderMap([], -1);
+      document.getElementById("timelineList").innerHTML = `<div class="empty">Enter a plate number above to trace its route.</div>`;
+
+      // Start WebSocket for real-time alerts
+      connectAlertWebSocket();
+
+      // Poll for fresh data every 10 seconds
+      setInterval(loadDashboardStats, 10000);
+      setInterval(loadRecentEvents, 5000);
+      setInterval(loadAlerts, 30000);
+    }
+
+    init();
   </script>
+
 
 </body>
 
