@@ -130,3 +130,34 @@ class TemporalVoter:
     def reset_track(self, track_id: str) -> None:
         """Fully reset a track (e.g. to allow re-detection)."""
         self._cleanup(track_id)
+
+    def get_confirmed_plates(self) -> dict[str, str]:
+        """
+        Return all confirmed plates as {track_id: plate_number}.
+
+        Only includes tracks that have been emitted (confirmed via voting).
+        Retrieves the best plate from the vote buffer for each emitted track.
+        """
+        confirmed = {}
+        for track_id in self._emitted:
+            votes = self._votes.get(track_id, [])
+            if votes:
+                from collections import Counter
+                plate_counts = Counter(plate for plate, _ in votes)
+                best_plate, _ = plate_counts.most_common(1)[0]
+                confirmed[track_id] = best_plate
+        return confirmed
+
+    def get_all_readings(self) -> dict[str, list[tuple[str, float]]]:
+        """
+        Return raw vote data as {track_id: [(plate_str, confidence), ...]}.
+
+        Useful for cross-camera confidence weighting — if the same plate
+        appears across multiple cameras with high vote counts, the
+        trajectory confidence is boosted.
+        """
+        return dict(self._votes)
+
+    def is_confirmed(self, track_id: str) -> bool:
+        """Return True if the track has already emitted a confirmed plate."""
+        return track_id in self._emitted

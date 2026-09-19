@@ -38,3 +38,22 @@ SNAPSHOT_DIR: str = os.getenv("SNAPSHOT_DIR", "/app/data/snapshots")
 # ── Frame processing ───────────────────────────────────────────────────────────
 # Process every Nth frame (1 = every frame, 3 = every 3rd frame, etc.)
 FRAME_SKIP: int = int(os.getenv("FRAME_SKIP", "3"))
+
+# ── Processing mode ────────────────────────────────────────────────────────────
+# "parallel" = current behavior (all cameras in separate threads)
+# "sequential" = cameras process one-at-a-time in sequence_order for trajectory tracking
+PROCESSING_MODE: str = os.getenv("PROCESSING_MODE", "parallel")
+
+# ── Adaptive frame skipping (sequential mode) ─────────────────────────────────
+# Min skip = dense processing when actively tracking a vehicle
+ADAPTIVE_SKIP_MIN: int = int(os.getenv("ADAPTIVE_SKIP_MIN", "2"))
+# Max skip = sparse scanning when no vehicles are present
+ADAPTIVE_SKIP_MAX: int = int(os.getenv("ADAPTIVE_SKIP_MAX", "8"))
+
+# ── Departure detection ───────────────────────────────────────────────────────
+# Number of consecutive frames with no detection before declaring vehicle departed
+DEPARTURE_GRACE_FRAMES: int = int(os.getenv("DEPARTURE_GRACE_FRAMES", "5"))
+
+# ── Cross-camera handoff ──────────────────────────────────────────────────────
+# Minimum confidence threshold for a plate to be handed off to the next camera
+MIN_PLATE_CONFIDENCE: float = float(os.getenv("MIN_PLATE_CONFIDENCE", "0.6"))

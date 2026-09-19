@@ -27,10 +27,12 @@ from config import (
     REDIS_PORT,
     VEHICLE_MODEL_PATH,
     PLATE_MODEL_PATH,
+    PROCESSING_MODE,
 )
 from detector import VehicleDetector
 from ocr import OCREngine
 from plate_detector import PlateDetector
+from sequential_orchestrator import SequentialOrchestrator
 
 # ── Logging ────────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -126,36 +128,64 @@ def main() -> None:
     signal.signal(signal.SIGINT, _shutdown)
     signal.signal(signal.SIGTERM, _shutdown)
 
-    # 6. Spawn one thread per camera
-    threads = []
-    for cam_cfg in cameras:
-        worker = CameraWorker(
-            camera_cfg=cam_cfg,
+    # 6. Branch on processing mode
+    logger.info(f"Processing mode: {PROCESSING_MODE}")
+
+    if PROCESSING_MODE == "sequential":
+        # ── Sequential mode: cameras process one-at-a-time in order ─────
+        # Sort cameras by sequence_order (fallback to list position)
+        cameras.sort(key=lambda c: c.get("sequence_order", float("inf")))
+
+        logger.info(
+            "Camera sequence: "
+            + " → ".join(c['camera_id'] for c in cameras)
+        )
+
+        orchestrator = SequentialOrchestrator(
+            cameras=cameras,
             vehicle_detector=vehicle_detector,
             plate_detector=plate_detector,
             ocr_engine=ocr_engine,
             redis_client=redis_client,
             stop_event=stop_event,
         )
-        t = threading.Thread(
-            target=worker.run,
-            name=f"worker-{cam_cfg['camera_id']}",
-            daemon=True,
-        )
-        threads.append(t)
-        t.start()
-        logger.info(f"Started worker thread for {cam_cfg['camera_id']}")
 
-    # 7. Wait for shutdown
-    try:
-        while not stop_event.is_set():
-            time.sleep(1)
-    except KeyboardInterrupt:
-        stop_event.set()
+        try:
+            orchestrator.run()
+        except KeyboardInterrupt:
+            stop_event.set()
 
-    # 8. Wait for threads to finish
-    for t in threads:
-        t.join(timeout=5)
+    else:
+        # ── Parallel mode: all cameras in separate threads (default) ────
+        threads = []
+        for cam_cfg in cameras:
+            worker = CameraWorker(
+                camera_cfg=cam_cfg,
+                vehicle_detector=vehicle_detector,
+                plate_detector=plate_detector,
+                ocr_engine=ocr_engine,
+                redis_client=redis_client,
+                stop_event=stop_event,
+            )
+            t = threading.Thread(
+                target=worker.run,
+                name=f"worker-{cam_cfg['camera_id']}",
+                daemon=True,
+            )
+            threads.append(t)
+            t.start()
+            logger.info(f"Started worker thread for {cam_cfg['camera_id']}")
+
+        # Wait for shutdown
+        try:
+            while not stop_event.is_set():
+                time.sleep(1)
+        except KeyboardInterrupt:
+            stop_event.set()
+
+        # Wait for threads to finish
+        for t in threads:
+            t.join(timeout=5)
 
     logger.info("Perception container stopped.")
 
