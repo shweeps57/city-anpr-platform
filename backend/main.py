@@ -12,8 +12,10 @@ All endpoints consume canonical plate_event data from PostgreSQL/PostGIS.
 
 import asyncio
 from contextlib import asynccontextmanager, suppress
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 import psycopg
 import redis
 from models.schemas import CameraBase, CameraResponse
@@ -23,6 +25,7 @@ from routes.trajectory import router as trajectory_router
 from routes.analytics import router as analytics_router
 from routes.blacklist import router as blacklist_router
 from routes.alerts import router as alerts_router
+from routes.dashboard import router as dashboard_router
 from services.event_consumer import PlateEventConsumer
 
 
@@ -66,6 +69,7 @@ app.include_router(trajectory_router)
 app.include_router(analytics_router)
 app.include_router(blacklist_router)
 app.include_router(alerts_router)
+app.include_router(dashboard_router)
 
 
 # ─── Root endpoints ───
@@ -153,33 +157,46 @@ def list_events(
     camera_id: str | None = None,
     limit: int = 100,
 ):
-    """Query plate events with optional filters."""
+    """Query plate events with optional filters, joined with camera names."""
     with get_db_connection() as conn:
         with conn.cursor() as cur:
-            query = "SELECT * FROM plate_events WHERE 1=1"
+            query = """
+                SELECT pe.event_id, pe.plate_number, pe.confidence,
+                       pe.camera_id, pe.timestamp, pe.vehicle_type,
+                       pe.direction, pe.track_id, pe.snapshot_path,
+                       c.name AS camera_name, c.road
+                FROM plate_events pe
+                LEFT JOIN cameras c ON pe.camera_id = c.camera_id
+                WHERE 1=1
+            """
             params = []
 
             if plate_number:
-                query += " AND plate_number = %s"
+                query += " AND pe.plate_number = %s"
                 params.append(plate_number.upper())
             if camera_id:
-                query += " AND camera_id = %s"
+                query += " AND pe.camera_id = %s"
                 params.append(camera_id)
 
-            query += " ORDER BY timestamp DESC LIMIT %s"
+            query += " ORDER BY pe.timestamp DESC LIMIT %s"
             params.append(limit)
 
             cur.execute(query, params)
             rows = cur.fetchall()
 
-    # Convert UUID and datetime for JSON serialization
     results = []
     for row in rows:
         r = dict(row)
         r["event_id"] = str(r["event_id"])
         r["timestamp"] = r["timestamp"].isoformat()
-        # Remove PostGIS geometry object, keep lat/lon from camera
         r.pop("location", None)
         results.append(r)
 
     return results
+
+
+# ─── Serve frontend static files ───
+
+frontend_path = Path("/app/frontend")
+if frontend_path.exists():
+    app.mount("/frontend", StaticFiles(directory=str(frontend_path), html=True), name="frontend")

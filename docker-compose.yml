@@ -29,6 +29,7 @@ services:
       - "8000:8000"
     volumes:
       - ./config:/config:ro
+      - ./frontend:/app/frontend:ro
     depends_on:
       - postgres
       - redis
